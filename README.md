@@ -1,54 +1,84 @@
-# mozaik-network
-Mozaik Network is a network for AI agent discovery and communication.
+# Mozaik Agent
 
-## Running
+Mozaik Agent is a TypeScript framework for building AI agents.
 
-`npm start` serves HTTP and WebSocket on `PORT` (3000 by default). `npm test` runs the tests.
+An agent works in a loop toward a goal. It asks a model what to do next, runs a tool when the model asks for one, and repeats until the work is done. Mozaik keeps that loop under your control: every step is written down and waits, so you can pause it, continue it, stop it, or hand it to someone else.
 
-Self-hosted, it needs no keys and counts nothing: everything belongs to one local account. The hosted
-network at `network.app.jigjoy.ai` takes a Mozaik Cloud API key and charges each account for the
-messages its networks carry; it plugs its own `Accounts` and `Metering` (`src/domain`) into
-`initNetworkModule`.
+## The agent loop
 
-## Protocol
+A loop is one piece of work for one goal. It remembers:
 
-HTTP, with `Authorization: Bearer <Mozaik Cloud API key>` on the hosted network:
+- the **goal**
+- the **assignee**, the participant responsible for moving it forward
+- the **context**, the conversation so far
+- the **pending operation**, the single next step, when one is waiting
+- the **completed operations**, each step that already finished, with its request and its result
 
-- `POST /networks` `{ "name": "…" }` → the network (`id`, `name`, `ownerId`, `peerIds`).
-- `POST /peers` `{ "name": "…", "role": "user" | "agent" | "external", "capabilities": ["…"] }` → the
-  peer's manifest and its `token`. The token is shown only here; keep it, the peer joins with it.
-- `GET /healthz` → `{ "ok": true }`.
+The loop moves one step at a time. It issues the next operation, waits for the result, records that result, and then issues the following operation. When the goal is done, the loop completes.
 
-Networks and peers belong to the account that created them, and a peer may join only its own
-account's networks.
+## Pending operations
 
-WebSocket, one network per connection:
+A **pending operation** is the next step, stated explicitly and not yet run. A loop holds at most one.
 
-- `{ "type": "peer.join", "networkId": "…", "token": "pt_…" }`. Who the peer is comes from the token.
-- `{ "type": "message.send", "payload": "…" }` → a `message.sent` envelope to the network's other
-  peers, from the peer the connection joined as. Each one is one message counted against the network's
-  owner, however many peers it reaches; joining and leaving are free.
-- `{ "type": "peer.leave" }`.
+There are two kinds:
 
-A request that can't be done is answered with `{ "type": "error", "code", "message" }` and the
-connection stays open. `code` is `unauthorized`, `forbidden`, `not_found`, `payment_required` (out of
-messages: add balance in Mozaik Cloud, then go on) or `invalid_request`. Frames are at most 256 KiB,
-HTTP bodies 64 KiB.
+- **Inference.** Ask the model, using the context gathered so far.
+- **Tool call.** Run a tool the model requested, with the arguments it gave.
 
-## Deploying
+The loop’s job is to decide that step and wait. Your application decides when the step runs, who runs it, and whether it runs. When you bring the result back, it must match the operation that is waiting. The loop stores the result and issues the next step.
 
-It runs on AWS as one ECS Fargate task (its state is in memory) behind the mozaik-cloud load balancer, at
-`https://network.app.jigjoy.ai` / `wss://network.app.jigjoy.ai`. `deploy/stack.yaml` is the stack;
-`deploy/deploy.sh` builds the image, pushes it to ECR and deploys:
+That waiting step is what makes the loop flexible. You always know the exact place the agent is standing, so pausing, continuing, stopping, and handing the work off are ordinary actions on the loop.
+
+Here is one goal, step by step:
+
+1. The loop issues an inference and waits.
+2. You run it. The model asks for a tool.
+3. The loop issues that tool call and waits.
+4. You pause, show the call to a person, and continue only after they approve.
+5. You run the tool and return the result.
+6. The loop issues another inference, now including the tool result.
+7. The model answers. The loop completes.
+
+Each step waited until you were ready for it.
+
+## Pause, continue, and stop
+
+**Continue.** Carry out the pending operation and return its result. The loop records it and issues the next step.
+
+**Pause.** Leave the pending operation where it is. The goal, the context, and the finished steps stay on the loop. Continuing later resumes that same step.
+
+**Stop.** End the loop. The pending operation is left unrun.
+
+Because the loop is waiting on one known step, these are precise. Pause means “this tool call is next, and it has not run.” Stop means “do not run it.” Continue means “run it, then take the next step.”
+
+## Human in the loop
+
+A pending operation is a checkpoint a person can sit on.
+
+Before a tool runs, the call is already on the loop: which tool, which arguments, and the history that led there. Show that to a person. They can approve it, change it, or refuse it. The agent waits at that boundary for as long as the review takes. Their decision becomes the result you return, or the reason you stop.
+
+The same checkpoint works for an inference. A person can review what the model is about to be asked, or review the model’s answer, before the loop takes another step.
+
+The review uses the wait the loop already has. The person answers, and the loop continues from the same step.
+
+## Handoffs
+
+The assignee is who currently carries the loop forward. A handoff gives that role to someone else: another agent, a person, or another service.
+
+The loop itself does not change hands empty. The new assignee receives the same goal, the same context, the finished steps, and the operation that is still pending. They continue the work from that step.
+
+An agent can pass a tool call to a person for approval, and the person can pass the loop back once they have decided. One agent can also pass a goal to another agent that is better suited to the next step. The receiver continues the same loop, with the pending step still attached.
+
+## Install
 
 ```bash
-AWS_PROFILE=mozaik-cloud-prod CERTIFICATE_ARN=arn:aws:acm:eu-west-1:… deploy/deploy.sh
+npm install @mozaik-ai/core
 ```
 
-Hosted, it checks keys and reports messages to Mozaik Cloud (`MOZAIK_CLOUD_URL`) with a service token
-both sides hold: in SSM as `/mozaik-network/service-token` for the task, and as `NETWORK_SERVICE_TOKEN`
-in the ingest's env. Make it once, before the first deploy that has it:
+## Contributing
 
-```bash
-aws ssm put-parameter --type SecureString --name /mozaik-network/service-token --value "$(openssl rand -hex 32)"
-```
+Contributions are welcome. Read the [Contributing Guidelines](./CONTRIBUTING.md) before opening an issue or pull request.
+
+## License
+
+Created by the [JigJoy](https://jigjoy.io) team. Licensed under the MIT License.
