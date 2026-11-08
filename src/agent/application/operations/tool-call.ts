@@ -24,14 +24,7 @@ export class ToolCall {
 
 		const result: ToolCallResult = await this.toolCallRunner.run(input.request, input.tool)
 
-		loop.acceptResult({
-			type: "tool-call",
-			operationId: input.directiveId,
-			requestedAt: new Date(),
-			completedAt: new Date(),
-			call: input.request,
-			result: result,
-		})
+		loop.acceptToolCallResult(result)
 
 		return result
 	}

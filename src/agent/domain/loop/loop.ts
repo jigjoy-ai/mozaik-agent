@@ -1,6 +1,8 @@
 import { Agent } from "@agent/index"
-import type { Context } from "@agent/domain/inference/context"
+import type { Context, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 import { CompletedOperation, PendingOperation } from "@agent/domain/loop/operation"
+import { InferenceResult } from "../inference/inference-result"
+import { InferenceRequest } from "../inference/inference-request"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
 
@@ -48,13 +50,36 @@ export class Loop {
 		return this.pendingOperation
 	}
 
-	acceptResult(result: CompletedOperation): void {
-		if (this.pendingOperation?.id !== result.operationId) {
-			throw new Error("Result does not match the pending directive")
+	acceptInferenceResult(result: InferenceResult): void {
+		if (this.pendingOperation?.type !== "inference") {
+			throw new Error("Pending operation is not an inference")
 		}
 
 		this.pendingOperation = undefined
-		this.completedOperations.push(result)
+		this.completedOperations.push({
+			type: "inference",
+			operationId: this.pendingOperation!.id,
+			requestedAt: this.pendingOperation!.requestedAt,
+			completedAt: new Date(),
+			request: this.pendingOperation!.request as InferenceRequest,
+			result: result,
+		})
+	}
+
+	acceptToolCallResult(result: ToolCallResult): void {
+		if (this.pendingOperation?.type !== "tool-call") {
+			throw new Error("Pending operation is not a tool call")
+		}
+
+		this.pendingOperation = undefined
+		this.completedOperations.push({
+			type: "tool-call",
+			operationId: this.pendingOperation!.id,
+			requestedAt: this.pendingOperation!.requestedAt,
+			completedAt: new Date(),
+			request: this.pendingOperation!.request as ToolCallRequest,
+			result: result,
+		})
 	}
 
 	handoff(recipientId: string): void {

@@ -16,7 +16,7 @@ export type CompletedOperation =
 			operationId: string
 			requestedAt: Date
 			completedAt: Date
-			call: ToolCallRequest
+			request: ToolCallRequest
 			result: ToolCallResult
 	  }
 
@@ -29,9 +29,9 @@ export type PendingInference = {
 
 export type PendingToolCall = {
 	id: string
-	type: "tool_execution"
+	type: "tool-call"
 	requestedAt: Date
-	call: ToolCallRequest
+	request: ToolCallRequest
 }
 
 export type PendingOperation = PendingInference | PendingToolCall

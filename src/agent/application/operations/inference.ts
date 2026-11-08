@@ -19,14 +19,8 @@ export class Inference {
 
 		const inferenceResult: InferenceResult = await this.inferenceRunner.run(input.request)
 
-		loop.acceptResult({
-			type: "inference",
-			operationId: input.directiveId,
-			requestedAt: new Date(),
-			completedAt: new Date(),
-			request: input.request,
-			result: inferenceResult,
-		})
+		loop.acceptInferenceResult(inferenceResult)
+
 		return inferenceResult
 	}
 }
