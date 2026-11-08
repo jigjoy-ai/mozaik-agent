@@ -1,6 +1,6 @@
 # Mozaik Agent
 
-Mozaik Agent is a TypeScript framework for building AI agents.
+Mozaik Agent is a TypeScript SDK for building AI agents.
 
 An agent works in a loop toward a goal. It asks a model what to do next, runs a tool when the model asks for one, and repeats until the work is done. Mozaik keeps that loop under your control: every step is written down and waits, so you can pause it, continue it, stop it, or hand it to someone else.
 
