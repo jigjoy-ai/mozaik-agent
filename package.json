@@ -24,7 +24,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/jigjoy-ai/mozaik.git"
+		"url": "git+https://github.com/jigjoy-ai/mozaik-agent.git"
 	},
 	"author": "Miodrag Vilotijević",
 	"scripts": {
@@ -67,8 +67,8 @@
 		"rimraf": "^6.1.4",
 		"tsup": "^9.0.0",
 		"tsx": "^4.21.0",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.36.0"
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.1"
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^1.6.0",

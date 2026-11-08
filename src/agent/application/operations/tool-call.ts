@@ -1,11 +1,9 @@
-import { Directive } from "@network/peer/directive"
 import { ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
 import { ToolCallRunner } from "@agent/domain/inference/tool-call-runner"
 import { Tool } from "@agent/domain/inference/tool"
-import { DirectiveResult } from "@network/peer/directive-result"
 
-export class ToolCall implements Directive {
+export class ToolCall {
 	id: string = "toolcall"
 
 	constructor(
@@ -18,7 +16,7 @@ export class ToolCall implements Directive {
 		directiveId: string
 		request: ToolCallRequest
 		tool: Tool
-	}): Promise<DirectiveResult<ToolCallResult>> {
+	}): Promise<ToolCallResult> {
 		const loop = await this.loopRepository.findById(input.loopId)
 		if (!loop) {
 			throw new Error("Loop not found")
@@ -26,10 +24,6 @@ export class ToolCall implements Directive {
 
 		const result: ToolCallResult = await this.toolCallRunner.run(input.request, input.tool)
 
-		const directiveResult: DirectiveResult<ToolCallResult> = {
-			directiveId: input.directiveId,
-			result: result,
-		}
 		loop.acceptResult({
 			type: "tool-call",
 			operationId: input.directiveId,
@@ -39,6 +33,6 @@ export class ToolCall implements Directive {
 			result: result,
 		})
 
-		return directiveResult
+		return result
 	}
 }

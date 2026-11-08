@@ -14,8 +14,8 @@ export class AdvanceLoopUseCase {
 			throw new Error("Loop not found")
 		}
 
-		const pendingDirective = loop.getPendingDirective()
-		if (!pendingDirective) {
+		const pendingOperation = loop.getPendingOperation
+		if (!pendingOperation) {
 			throw new Error("No pending directive found")
 		}
 

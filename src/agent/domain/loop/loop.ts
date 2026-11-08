@@ -25,7 +25,7 @@ export class Loop {
 		context: Context,
 		state: LoopStateId,
 		pendingOperation: PendingOperation | undefined,
-		completedOperations: CompletedOperation[] = [],
+		completedOperations: CompletedOperation[],
 	) {
 		this.id = id
 		this.goal = goal

@@ -1,11 +1,9 @@
 import { InferenceResult } from "@agent/domain/inference/inference-result"
-import { Directive } from "@network/peer/directive"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
-import { DirectiveResult } from "@network/peer/directive-result"
 import { InferenceRunner } from "@agent/domain/inference/inference-runner"
 import { InferenceRequest } from "@agent/domain/inference/inference-request"
 
-export class Inference implements Directive {
+export class Inference {
 	id: string = "inference"
 
 	constructor(
@@ -13,11 +11,7 @@ export class Inference implements Directive {
 		private readonly inferenceRunner: InferenceRunner,
 	) {}
 
-	async invoke(input: {
-		loopId: string
-		directiveId: string
-		request: InferenceRequest
-	}): Promise<DirectiveResult<InferenceResult>> {
+	async invoke(input: { loopId: string; directiveId: string; request: InferenceRequest }): Promise<InferenceResult> {
 		let loop = await this.loopRepository.findById(input.loopId)
 		if (!loop) {
 			throw new Error("Loop not found")
@@ -25,10 +19,6 @@ export class Inference implements Directive {
 
 		const inferenceResult: InferenceResult = await this.inferenceRunner.run(input.request)
 
-		const directiveResult: DirectiveResult<InferenceResult> = {
-			directiveId: input.directiveId,
-			result: inferenceResult,
-		}
 		loop.acceptResult({
 			type: "inference",
 			operationId: input.directiveId,
@@ -37,6 +27,6 @@ export class Inference implements Directive {
 			request: input.request,
 			result: inferenceResult,
 		})
-		return directiveResult
+		return inferenceResult
 	}
 }

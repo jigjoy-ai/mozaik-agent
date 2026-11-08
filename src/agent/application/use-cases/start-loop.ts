@@ -14,7 +14,7 @@ export class StartLoopUseCase {
 		const context: Context = {
 			items: [],
 		}
-		const loop = new Loop(input.agentId, input.subject, input.agentId, context, "idle")
+		const loop = new Loop(input.agentId, input.subject, input.agentId, context, "idle", undefined, [])
 		await this.loopRepository.save(loop)
 		return loop
 	}
