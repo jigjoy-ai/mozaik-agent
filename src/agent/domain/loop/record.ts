@@ -11,6 +11,6 @@ export interface LoopRecord {
 	state: LoopStateId
 	inferenceRequest?: InferenceRequest
 	transitionHistory: LoopTransition[]
-	pendingDirective?: PendingOperation
+	pendingOperation?: PendingOperation
 	completedOperations: CompletedOperation[]
 }

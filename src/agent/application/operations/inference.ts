@@ -11,7 +11,7 @@ export class Inference {
 		private readonly inferenceRunner: InferenceRunner,
 	) {}
 
-	async invoke(input: { loopId: string; directiveId: string; request: InferenceRequest }): Promise<InferenceResult> {
+	async invoke(input: { loopId: string; request: InferenceRequest }): Promise<InferenceResult> {
 		let loop = await this.loopRepository.findById(input.loopId)
 		if (!loop) {
 			throw new Error("Loop not found")

@@ -11,12 +11,7 @@ export class ToolCall {
 		private readonly toolCallRunner: ToolCallRunner,
 	) {}
 
-	async invoke(input: {
-		loopId: string
-		directiveId: string
-		request: ToolCallRequest
-		tool: Tool
-	}): Promise<ToolCallResult> {
+	async invoke(input: { loopId: string; request: ToolCallRequest; tool: Tool }): Promise<ToolCallResult> {
 		const loop = await this.loopRepository.findById(input.loopId)
 		if (!loop) {
 			throw new Error("Loop not found")

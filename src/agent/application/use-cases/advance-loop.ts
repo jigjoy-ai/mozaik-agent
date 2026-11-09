@@ -16,7 +16,7 @@ export class AdvanceLoopUseCase {
 
 		const pendingOperation = loop.getPendingOperation
 		if (!pendingOperation) {
-			throw new Error("No pending directive found")
+			throw new Error("No pending operation found")
 		}
 
 		await this.loopRepository.save(loop)
