@@ -1,5 +1,5 @@
-import type { InferenceRequest } from "@agent/domain/inference/inference-request"
-import type { InferenceResult } from "@agent/domain/inference/inference-result"
+import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import type { ModelOutputItem, ReasoningItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"

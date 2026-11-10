@@ -49,22 +49,22 @@ export interface ModelMessageItem extends MessageItem {
 	readonly text: string
 }
 
-export interface ToolCallRequest {
-	readonly type: "tool_call_request"
+export interface ToolCallItem {
+	readonly type: "tool_call"
 	readonly requestId: string
 	readonly toolName: string
 	readonly toolArguments: string
 }
 
-export interface ToolCallResult {
+export interface ToolCallResultItem {
 	readonly type: "tool_call_result"
 	readonly requestId: string
 	readonly result: InputText
 }
 
-export type ContextItem = MessageItem | ReasoningItem | ToolCallRequest | ToolCallResult
+export type ContextItem = MessageItem | ReasoningItem | ToolCallItem | ToolCallResultItem
 
-export type ModelOutputItem = ModelMessageItem | ToolCallRequest | ReasoningItem
+export type ModelOutputItem = ModelMessageItem | ToolCallItem | ReasoningItem
 
 export type Context = {
 	readonly items: ContextItem[]

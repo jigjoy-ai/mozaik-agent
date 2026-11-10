@@ -1,8 +1,8 @@
 import { SemanticEvent } from "@util/semantic-event"
 import { GoogleGenAI } from "@google/genai"
-import type { InferenceEndpoint } from "@agent/domain/inference/inference-endpoint"
-import type { InferenceRequest } from "@agent/domain/inference/inference-request"
-import type { InferenceResult } from "@agent/domain/inference/inference-result"
+import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
+import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import { GeminiGenerateContentMapper } from "@agent/infrastructure/providers/gemini/gemini-generate-content-mapper"
 import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 

@@ -1,15 +1,9 @@
-import { Agent } from "@agent/index"
-import type { Context, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
-import { CompletedOperation, PendingOperation } from "@agent/domain/loop/operation"
-import { InferenceResult } from "../inference/inference-result"
-import { InferenceRequest } from "../inference/inference-request"
+import type { Context } from "@agent/domain/inference/context"
+import { InferenceOutput } from "@agent/domain/loop/inference-result"
+import { ToolCallOutput } from "@agent/domain/loop/inference-request"
+import { InstructionOutput, LoopInstruction } from "@agent/domain/loop/instruction"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
-
-export type AgentLoop = {
-	agent: Agent
-	loop: Loop
-}
 
 export class Loop {
 	id: string
@@ -17,8 +11,8 @@ export class Loop {
 	assignee: string
 	state: LoopStateId
 	context: Context
-	pendingOperation: PendingOperation | undefined
-	completedOperations: CompletedOperation[]
+	pendingInstruction: LoopInstruction | undefined
+	completedInstructions: LoopInstruction[]
 
 	constructor(
 		id: string,
@@ -26,60 +20,46 @@ export class Loop {
 		assignee: string,
 		context: Context,
 		state: LoopStateId,
-		pendingOperation: PendingOperation | undefined,
-		completedOperations: CompletedOperation[],
+		pendingInstruction: LoopInstruction | undefined,
+		completedInstructions: LoopInstruction[],
 	) {
 		this.id = id
 		this.goal = goal
 		this.assignee = assignee
 		this.context = context
 		this.state = state
-		this.pendingOperation = pendingOperation
-		this.completedOperations = completedOperations
+		this.pendingInstruction = pendingInstruction
+		this.completedInstructions = completedInstructions
 	}
 
-	issueOperation(operation: PendingOperation): void {
-		if (this.pendingOperation) {
-			throw new Error("An operation is already pending")
+	setBreakpoint(instruction: LoopInstruction): void {
+		if (this.pendingInstruction) {
+			throw new Error("An instruction is already pending")
 		}
 
-		this.pendingOperation = operation
+		this.pendingInstruction = instruction
 	}
 
-	getPendingOperation(): PendingOperation | undefined {
-		return this.pendingOperation
+	getBreakpoint(): LoopInstruction | undefined {
+		return this.pendingInstruction
 	}
 
-	acceptInferenceResult(result: InferenceResult): void {
-		if (this.pendingOperation?.type !== "inference") {
-			throw new Error("Pending operation is not an inference")
+	resolveBreakpoint(output: InstructionOutput): void {
+		if (!this.pendingInstruction) {
+			throw new Error("No pending instruction to resolve")
 		}
 
-		this.pendingOperation = undefined
-		this.completedOperations.push({
-			type: "inference",
-			operationId: this.pendingOperation!.id,
-			requestedAt: this.pendingOperation!.requestedAt,
-			completedAt: new Date(),
-			request: this.pendingOperation!.request as InferenceRequest,
-			result: result,
-		})
-	}
-
-	acceptToolCallResult(result: ToolCallResult): void {
-		if (this.pendingOperation?.type !== "tool-call") {
-			throw new Error("Pending operation is not a tool call")
+		if (this.pendingInstruction.type === "inference" && !(output.type === "inference_output")) {
+			throw new Error("Inference output required")
+		} else if (this.pendingInstruction.type === "tool-call" && !(output.type === "tool_call_output")) {
+			throw new Error("Tool call output required")
 		}
 
-		this.pendingOperation = undefined
-		this.completedOperations.push({
-			type: "tool-call",
-			operationId: this.pendingOperation!.id,
-			requestedAt: this.pendingOperation!.requestedAt,
-			completedAt: new Date(),
-			request: this.pendingOperation!.request as ToolCallRequest,
-			result: result,
-		})
+		this.pendingInstruction.completedAt = new Date()
+		this.pendingInstruction.output = output
+
+		this.completedInstructions.push(this.pendingInstruction)
+		this.pendingInstruction = undefined
 	}
 
 	handoff(recipientId: string): void {

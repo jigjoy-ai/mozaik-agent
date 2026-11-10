@@ -14,7 +14,7 @@ export class AdvanceLoopUseCase {
 			throw new Error("Loop not found")
 		}
 
-		const pendingOperation = loop.getPendingOperation
+		const pendingOperation = loop.getBreakpoint()
 		if (!pendingOperation) {
 			throw new Error("No pending operation found")
 		}

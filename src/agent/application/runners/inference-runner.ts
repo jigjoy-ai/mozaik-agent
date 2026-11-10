@@ -1,6 +1,6 @@
 import type { InferenceRunner } from "@agent/domain/inference/inference-runner"
-import type { InferenceRequest } from "@agent/domain/inference/inference-request"
-import type { InferenceResult } from "@agent/domain/inference/inference-result"
+import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import type { InferenceRequestValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
 import { SemanticEvent } from "@util/semantic-event"
