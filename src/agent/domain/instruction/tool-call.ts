@@ -5,7 +5,7 @@ export type ToolCallParams = {
 	readonly toolArguments: string
 }
 
-export type ToolCallPointer = {
+export type ToolCallBreakpoint = {
 	readonly type: "tool_call"
 	readonly requestId: string
 	readonly parameters: ToolCallParams

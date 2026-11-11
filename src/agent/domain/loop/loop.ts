@@ -1,5 +1,6 @@
 import type { Context } from "@agent/domain/inference/context"
-import { Instruction, InstructionPointer, InstructionResult } from "@agent/domain/instruction/instruction"
+import { Instruction, InstructionResult } from "@agent/domain/instruction/instruction"
+import { LoopBreakpoint } from "@agent/domain/loop/loop-breakpoint"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
 
@@ -9,7 +10,7 @@ export class Loop {
 	assignee: string
 	state: LoopStateId
 	context: Context
-	pointer: InstructionPointer | undefined
+	breakpoint: LoopBreakpoint | undefined
 	completedInstructions: Instruction[]
 
 	constructor(
@@ -18,7 +19,7 @@ export class Loop {
 		assignee: string,
 		context: Context,
 		state: LoopStateId,
-		pointer: InstructionPointer | undefined,
+		breakpoint: LoopBreakpoint | undefined,
 		completedInstructions: Instruction[],
 	) {
 		this.id = id
@@ -26,35 +27,35 @@ export class Loop {
 		this.assignee = assignee
 		this.context = context
 		this.state = state
-		this.pointer = pointer
+		this.breakpoint = breakpoint
 		this.completedInstructions = completedInstructions
 	}
 
-	setBreakpoint(pointer: InstructionPointer): void {
-		if (this.pointer) {
-			throw new Error("An instruction pointer is already set")
+	setBreakpoint(breakpoint: LoopBreakpoint): void {
+		if (this.breakpoint) {
+			throw new Error("An breakpoint is already set")
 		}
 
-		this.pointer = pointer
+		this.breakpoint = breakpoint
 	}
 
-	getBreakpoint(): InstructionPointer | undefined {
-		return this.pointer
+	getBreakpoint(): LoopBreakpoint | undefined {
+		return this.breakpoint
 	}
 
 	resolveBreakpoint(result: InstructionResult): void {
-		if (!this.pointer) {
+		if (!this.breakpoint) {
 			throw new Error("No pending instruction to resolve")
 		}
 
-		if (this.pointer.type === "inference" && !(result.type === "inference_output")) {
+		if (this.breakpoint.type === "inference" && !(result.type === "inference_output")) {
 			throw new Error("Inference output required")
-		} else if (this.pointer.type === "tool_call" && !(result.type === "tool_call_output")) {
+		} else if (this.breakpoint.type === "tool_call" && !(result.type === "tool_call_output")) {
 			throw new Error("Tool call output required")
 		}
 
 		//this.completedInstructions.push(this.instructionPointer)
-		this.pointer = undefined
+		this.breakpoint = undefined
 	}
 
 	handoff(recipientId: string): void {

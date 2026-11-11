@@ -14,11 +14,6 @@ export type InferenceParams = {
 	context: Context
 }
 
-export type InferencePointer = {
-	readonly type: "inference"
-	readonly parameters: InferenceParams
-}
-
 export type InferenceResult = {
 	readonly type: "inference_output"
 	items: ModelOutputItem[]

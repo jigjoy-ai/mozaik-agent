@@ -1,5 +1,5 @@
 import { LoopStateId } from "@agent/domain/loop/loop"
-import { InstructionPointer } from "@agent/domain/instruction/instruction"
+import { LoopBreakpoint } from "@agent/domain/loop/loop-breakpoint"
 
 export interface LoopRecord {
 	id: string
@@ -7,5 +7,5 @@ export interface LoopRecord {
 	subject: string
 	createdAt: Date
 	state: LoopStateId
-	instructionPointer?: InstructionPointer
+	breakpoint?: LoopBreakpoint
 }
