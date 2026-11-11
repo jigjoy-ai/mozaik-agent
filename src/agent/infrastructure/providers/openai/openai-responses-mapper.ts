@@ -1,18 +1,17 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type OpenAI from "openai"
 
 export class OpenAIResponsesMapper {
-	toRequest(instruction: InferenceInstruction): any {
+	toRequest(params: InferenceParams): any {
 		const request: any = {
-			model: instruction.model,
-			input: this.mapContextItems(instruction),
+			model: params.model,
+			input: this.mapContextItems(params),
 		}
 
-		if (instruction.tools && instruction.tools.length > 0) {
-			request.tools = instruction.tools.map((tool) => ({
+		if (params.tools && params.tools.length > 0) {
+			request.tools = params.tools.map((tool) => ({
 				type: "function",
 				name: tool.name,
 				description: tool.description,
@@ -20,14 +19,14 @@ export class OpenAIResponsesMapper {
 			}))
 		}
 
-		if (instruction.reasoningEffort) {
+		if (params.reasoningEffort) {
 			request.reasoning = {
-				effort: instruction.reasoningEffort,
+				effort: params.reasoningEffort,
 			}
 		}
 
-		if (instruction.structuredOutput) {
-			const format = instruction.structuredOutput
+		if (params.structuredOutput) {
+			const format = params.structuredOutput
 			request.text = {
 				format: {
 					type: "json_schema",
@@ -38,17 +37,17 @@ export class OpenAIResponsesMapper {
 			}
 		}
 
-		if (instruction.streaming) {
-			request.stream = instruction.streaming
+		if (params.streaming) {
+			request.stream = params.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(instruction: InferenceInstruction): any[] {
+	mapContextItems(params: InferenceParams): any[] {
 		const input: any[] = []
 
-		for (const item of instruction.context.items) {
+		for (const item of params.context.items) {
 			if (item.type === "developer_message" || item.type === "system_message" || item.type === "user_message") {
 				const role =
 					item.type === "developer_message" ? "developer" : item.type === "system_message" ? "system" : "user"

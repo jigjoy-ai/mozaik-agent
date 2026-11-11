@@ -1,5 +1,4 @@
-import { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import { InferenceResult } from "@agent/domain/loop/inference-result"
+import { InferenceInstruction, InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import { SemanticEvent } from "@util/semantic-event"
 import { OpenAIChatCompletionsMapper } from "@agent/infrastructure/providers/openai/openai-chat-completions-mapper"
 import OpenAI from "openai"
@@ -64,21 +63,21 @@ export class OpenAIChatCompletions implements Endpoint {
 		}))
 	}
 
-	private buildRequest(instruction: InferenceInstruction): any {
+	private buildRequest(params: InferenceParams): any {
 		return {
 			...this.extraBody,
-			...this.mapper.toRequest(instruction),
+			...this.mapper.toRequest(params),
 		}
 	}
 
-	async infer(input: InferenceInstruction): Promise<InferenceResult> {
-		const response = await this.client.chat.completions.create(this.buildRequest(input))
+	async infer(params: InferenceParams): Promise<InferenceResult> {
+		const response = await this.client.chat.completions.create(this.buildRequest(params))
 
 		return this.mapper.toResponse(response)
 	}
 
-	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
-		const stream = this.client.chat.completions.stream(this.buildRequest(instruction))
+	async *stream(params: InferenceParams): AsyncIterable<SemanticEvent> {
+		const stream = this.client.chat.completions.stream(this.buildRequest(params))
 
 		for await (const chunk of stream) {
 			yield chunk as unknown as SemanticEvent
@@ -90,7 +89,7 @@ export class OpenAIChatCompletions implements Endpoint {
 			type: "inference.output",
 			payload: output,
 			occurredAt: new Date(),
-			producerId: instruction.model,
+			producerId: params.model,
 		}
 	}
 }

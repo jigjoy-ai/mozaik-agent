@@ -1,6 +1,6 @@
 import { SemanticEvent } from "@util/semantic-event"
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceInstruction, InferenceParams } from "@agent/domain/instruction/inference"
+import type { InferenceResult } from "@agent/domain/instruction/inference"
 import { AnthropicMessagesMapper } from "@agent/infrastructure/providers/anthropic/anthropic-messages-mapper"
 import Anthropic from "@anthropic-ai/sdk"
 import { Endpoint } from "@agent/domain/inference/endpoint"
@@ -35,15 +35,15 @@ export class AnthropicMessages implements Endpoint {
 		}))
 	}
 
-	async infer(input: InferenceInstruction): Promise<InferenceResult> {
-		const request = this.mapper.toRequest(input)
+	async infer(params: InferenceParams): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(params)
 		const response = await this.client.messages.create(request)
 
 		return this.mapper.toResponse(response)
 	}
 
-	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
-		const request = this.mapper.toRequest(instruction)
+	async *stream(params: InferenceParams): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(params)
 		const stream = this.client.messages.stream(request)
 
 		for await (const event of stream) {

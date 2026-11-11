@@ -1,13 +1,12 @@
-import { ToolCallInstruction } from "@agent/domain/loop/tool-call-instruction"
-import { ToolCallResult } from "@agent/domain/loop/tool-call-result"
+import { ToolCallParams } from "@agent/domain/instruction/tool-call"
+import { ToolCallInstruction, ToolCallResult } from "@agent/domain/instruction/tool-call"
 import { ToolRegistry } from "@agent/domain/loop/tool-registry"
 import { Tool } from "@agent/domain/inference/tool"
-import { ToolCallProcessor } from "@agent/domain/loop/instruction"
 
-export class ToolCallProcessorImpl implements ToolCallProcessor {
+export class ToolCall implements ToolCallInstruction {
 	constructor(private readonly toolRegistry: ToolRegistry) {}
 
-	async run(input: ToolCallInstruction): Promise<ToolCallResult> {
+	async run(input: ToolCallParams): Promise<ToolCallResult> {
 		const tool = this.toolRegistry.getTool(input.toolName)
 		if (!tool) {
 			throw new Error(`Tool not found: ${input.toolName}`)
@@ -17,7 +16,7 @@ export class ToolCallProcessorImpl implements ToolCallProcessor {
 		return output
 	}
 
-	private async call(input: ToolCallInstruction, tool: Tool): Promise<ToolCallResult> {
+	private async call(input: ToolCallParams, tool: Tool): Promise<ToolCallResult> {
 		try {
 			const result = await tool.invoke(JSON.parse(input.toolArguments))
 			const resultText = typeof result === "string" ? result : JSON.stringify(result)

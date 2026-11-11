@@ -1,8 +1,7 @@
 import { SemanticEvent } from "@util/semantic-event"
-import { InferenceInstruction } from "../loop/inference-instruction"
-import { InferenceResult } from "../loop/inference-result"
+import { InferenceParams, InferenceResult } from "../instruction/inference"
 
 export interface Endpoint {
-	infer(input: InferenceInstruction): Promise<InferenceResult>
-	stream(input: InferenceInstruction): AsyncIterable<SemanticEvent>
+	infer(params: InferenceParams): Promise<InferenceResult>
+	stream(params: InferenceParams): AsyncIterable<SemanticEvent>
 }

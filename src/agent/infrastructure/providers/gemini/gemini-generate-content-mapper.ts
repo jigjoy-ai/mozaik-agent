@@ -1,21 +1,20 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type { ModelOutputItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 
 export class GeminiGenerateContentMapper {
-	toRequest(instruction: InferenceInstruction) {
-		const { contents, systemInstruction } = this.mapContextItems(instruction)
+	toRequest(params: InferenceParams) {
+		const { contents, systemInstruction } = this.mapContextItems(params)
 		const config: any = {}
 
 		if (systemInstruction) {
 			config.systemInstruction = systemInstruction
 		}
 
-		if (instruction.tools && instruction.tools.length > 0) {
+		if (params.tools && params.tools.length > 0) {
 			config.tools = [
 				{
-					functionDeclarations: instruction.tools.map((tool) => ({
+					functionDeclarations: params.tools.map((tool) => ({
 						name: tool.name,
 						description: tool.description,
 						parametersJsonSchema: tool.parameters,
@@ -24,38 +23,38 @@ export class GeminiGenerateContentMapper {
 			]
 		}
 
-		if (instruction.structuredOutput) {
+		if (params.structuredOutput) {
 			config.responseMimeType = "application/json"
-			config.responseSchema = instruction.structuredOutput.schema
+			config.responseSchema = params.structuredOutput.schema
 		}
 
-		if (instruction.reasoningEffort) {
+		if (params.reasoningEffort) {
 			config.thinkingConfig = {
-				thinkingLevel: instruction.reasoningEffort,
+				thinkingLevel: params.reasoningEffort,
 				includeThoughts: true,
 			}
 		}
 
 		const request: any = {
-			model: instruction.model,
+			model: params.model,
 			contents,
 			config,
 		}
 
-		if (instruction.streaming) {
-			request.stream = instruction.streaming
+		if (params.streaming) {
+			request.stream = params.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(instruction: InferenceInstruction): { contents: any[]; systemInstruction?: string } {
-		const context = instruction.context
+	mapContextItems(params: InferenceParams): { contents: any[]; systemInstruction?: string } {
+		const context = params.context
 		const contents: any[] = []
 		const system: string[] = []
 		const callNames = new Map<string, string>()
 
-		for (const item of context.items) {
+		for (const item of params.context.items) {
 			if (item.type === "developer_message" || item.type === "system_message") {
 				system.push(item.text)
 				continue

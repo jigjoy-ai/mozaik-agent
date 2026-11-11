@@ -1,6 +1,6 @@
 import { SemanticEvent } from "@util/semantic-event"
-import { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import { InferenceResult } from "@agent/domain/loop/inference-result"
+import { InferenceInstruction, InferenceParams } from "@agent/domain/instruction/inference"
+import { InferenceResult } from "@agent/domain/instruction/inference"
 import { OpenAIResponsesMapper } from "@agent/infrastructure/providers/openai/openai-responses-mapper"
 import OpenAI from "openai"
 import { Endpoint } from "@agent/domain/inference/endpoint"
@@ -33,15 +33,15 @@ export class OpenAIResponses implements Endpoint {
 		}))
 	}
 
-	async infer(instruction: InferenceInstruction): Promise<InferenceResult> {
-		const request = this.mapper.toRequest(instruction)
+	async infer(params: InferenceParams): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(params)
 		const response = await this.client.responses.create(request)
 
 		return this.mapper.toResponse(response)
 	}
 
-	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
-		const request = this.mapper.toRequest(instruction)
+	async *stream(params: InferenceParams): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(params)
 		const stream: any = await this.client.responses.create({ ...request, stream: true })
 
 		// Only the terminal `response.completed` event carries the assembled
@@ -65,7 +65,7 @@ export class OpenAIResponses implements Endpoint {
 			type: "inference.output",
 			payload: output,
 			occurredAt: new Date(),
-			producerId: instruction.model,
+			producerId: params.model,
 		}
 	}
 }

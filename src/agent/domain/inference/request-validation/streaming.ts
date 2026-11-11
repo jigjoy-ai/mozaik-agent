@@ -1,12 +1,12 @@
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
+import type { InferenceParams } from "@agent/domain/instruction/inference"
 
 export class StreamingValidation implements RequestValidationRule {
 	readonly name = "streaming"
 
-	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean {
-		if (!instruction.streaming) {
+	isValid(params: InferenceParams, model: ModelSpecification): boolean {
+		if (!params.streaming) {
 			return true
 		}
 

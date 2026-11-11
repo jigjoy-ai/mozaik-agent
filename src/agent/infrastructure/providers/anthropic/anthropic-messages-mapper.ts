@@ -1,51 +1,50 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type Anthropic from "@anthropic-ai/sdk"
 
 export class AnthropicMessagesMapper {
-	toRequest(instruction: InferenceInstruction) {
-		const { messages, system } = this.mapContextItems(instruction)
+	toRequest(params: InferenceParams) {
+		const { messages, system } = this.mapContextItems(params)
 		const outputConfig: any = {}
 
 		const request: any = {
-			model: instruction.model,
+			model: params.model,
 			messages,
 		}
 
-		request.max_tokens = instruction.maxOutputTokens!
+		request.max_tokens = params.maxOutputTokens!
 
 		if (system) {
 			request.system = system
 		}
 
-		if (instruction.tools && instruction.tools.length > 0) {
-			request.tools = instruction.tools.map((tool) => ({
+		if (params.tools && params.tools.length > 0) {
+			request.tools = params.tools.map((tool) => ({
 				name: tool.name,
 				description: tool.description,
 				input_schema: tool.parameters,
 			}))
 		}
 
-		if (instruction.structuredOutput) {
+		if (params.structuredOutput) {
 			outputConfig.format = {
 				type: "json_schema",
-				schema: instruction.structuredOutput.schema,
+				schema: params.structuredOutput.schema,
 			}
 		}
 
-		if (instruction.reasoningEffort) {
+		if (params.reasoningEffort) {
 			request.thinking = { type: "adaptive" }
-			outputConfig.effort = instruction.reasoningEffort
+			outputConfig.effort = params.reasoningEffort
 		}
 
 		if (Object.keys(outputConfig).length > 0) {
 			request.output_config = outputConfig
 		}
 
-		if (instruction.streaming) {
-			request.stream = instruction.streaming
+		if (params.streaming) {
+			request.stream = params.streaming
 		}
 
 		return request
@@ -64,8 +63,8 @@ export class AnthropicMessagesMapper {
 		})
 	}
 
-	mapContextItems(instruction: InferenceInstruction): { messages: any[]; system?: string } {
-		const context = instruction.context
+	mapContextItems(params: InferenceParams): { messages: any[]; system?: string } {
+		const context = params.context
 		const messages: any[] = []
 		const system: string[] = []
 

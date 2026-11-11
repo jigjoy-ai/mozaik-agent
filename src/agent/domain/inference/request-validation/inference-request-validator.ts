@@ -1,4 +1,4 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
+import type { InferenceInstruction } from "@agent/domain/instruction/inference"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 import { ReasoningEffortValidation } from "@agent/domain/inference/request-validation/reasoning-effort"

@@ -1,17 +1,16 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import type { ModelOutputItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 
 export class OpenAIChatCompletionsMapper {
-	toRequest(instruction: InferenceInstruction) {
+	toRequest(params: InferenceParams) {
 		const request: any = {
-			model: instruction.model,
-			messages: this.mapContextItems(instruction),
+			model: params.model,
+			messages: this.mapContextItems(params),
 		}
 
-		if (instruction.tools && instruction.tools.length > 0) {
-			request.tools = instruction.tools.map((tool) => ({
+		if (params.tools && params.tools.length > 0) {
+			request.tools = params.tools.map((tool) => ({
 				type: "function",
 				function: {
 					name: tool.name,
@@ -21,21 +20,21 @@ export class OpenAIChatCompletionsMapper {
 			}))
 		}
 
-		if (instruction.reasoningEffort) {
-			request.reasoning_effort = instruction.reasoningEffort
+		if (params.reasoningEffort) {
+			request.reasoning_effort = params.reasoningEffort
 		}
 
-		if (instruction.streaming) {
-			request.stream = instruction.streaming
+		if (params.streaming) {
+			request.stream = params.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(instruction: InferenceInstruction): any[] {
+	mapContextItems(params: InferenceParams): any[] {
 		const messages: any[] = []
 
-		for (const item of instruction.context.items) {
+		for (const item of params.context.items) {
 			if (item.type === "developer_message" || item.type === "system_message") {
 				messages.push({ role: "system", content: item.text })
 				continue

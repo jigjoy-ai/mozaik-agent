@@ -1,7 +1,6 @@
 import { SemanticEvent } from "@util/semantic-event"
 import { GoogleGenAI } from "@google/genai"
-import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceInstruction, InferenceParams, InferenceResult } from "@agent/domain/instruction/inference"
 import { GeminiGenerateContentMapper } from "@agent/infrastructure/providers/gemini/gemini-generate-content-mapper"
 import { Endpoint } from "@agent/domain/inference/endpoint"
 
@@ -35,15 +34,15 @@ export class GeminiGenerateContent implements Endpoint {
 		}))
 	}
 
-	async infer(input: InferenceInstruction): Promise<InferenceResult> {
-		const request = this.mapper.toRequest(input)
+	async infer(params: InferenceParams): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(params)
 		const response = await this.client.models.generateContent(request)
 
 		return this.mapper.toResponse(response)
 	}
 
-	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
-		const request = this.mapper.toRequest(instruction)
+	async *stream(params: InferenceParams): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(params)
 		const stream: any = await this.client.models.generateContentStream(request)
 
 		let lastEvent: SemanticEvent | undefined = undefined
