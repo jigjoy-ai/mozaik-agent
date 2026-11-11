@@ -2,7 +2,6 @@ import { InferenceRequest } from "@agent/domain/loop/inference-request"
 import { InferenceResult } from "@agent/domain/loop/inference-result"
 import { SemanticEvent } from "@util/semantic-event"
 import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import { OpenAIChatCompletionsMapper } from "@agent/infrastructure/providers/openai/openai-chat-completions-mapper"
 import OpenAI from "openai"
 
@@ -45,15 +44,12 @@ export interface OpenAICompatibleConfig {
  * at any OpenAI-compatible endpoint.
  */
 export class OpenAIChatCompletions implements InferenceEndpoint {
-	endpointMapper: InferenceEndpointMapper
+	endpointMapper: OpenAIChatCompletionsMapper
 	private _client?: OpenAI
 	private readonly clientConfig: OpenAICompatibleConfig
 	private readonly extraBody: Record<string, unknown>
 
-	constructor(
-		endpointMapper: InferenceEndpointMapper = new OpenAIChatCompletionsMapper(),
-		config: OpenAICompatibleConfig = {},
-	) {
+	constructor(endpointMapper = new OpenAIChatCompletionsMapper(), config: OpenAICompatibleConfig = {}) {
 		this.endpointMapper = endpointMapper
 		this.clientConfig = config
 		this.extraBody = config.extraBody ?? {}

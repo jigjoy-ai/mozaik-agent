@@ -1,6 +1,6 @@
 import { MemoryFactory } from "@agent/domain/memory"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
-import { InferenceRunner } from "@agent/domain/inference/inference-runner"
+import { InferenceRunner } from "@agent/domain/loop/inference-runner"
 import { AgentRepository } from "@agent/domain/agent-repository"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
 import { ToolDefinition } from "@agent/domain/inference/tool"

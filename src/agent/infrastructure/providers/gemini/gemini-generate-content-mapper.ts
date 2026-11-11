@@ -1,10 +1,9 @@
 import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type { ModelOutputItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 
-export class GeminiGenerateContentMapper implements InferenceEndpointMapper {
+export class GeminiGenerateContentMapper {
 	toRequest(inferenceRequest: InferenceRequest) {
 		const { contents, systemInstruction } = this.mapContextItems(inferenceRequest)
 		const config: any = {}

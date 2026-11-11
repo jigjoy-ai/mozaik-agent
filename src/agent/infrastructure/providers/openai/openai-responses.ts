@@ -3,7 +3,6 @@ import { InferenceRequest } from "@agent/domain/loop/inference-request"
 import { InferenceResult } from "@agent/domain/loop/inference-result"
 import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
 import { OpenAIResponsesMapper } from "@agent/infrastructure/providers/openai/openai-responses-mapper"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import OpenAI from "openai"
 
 /**
@@ -16,14 +15,11 @@ export interface OpenAIResponsesConfig {
 }
 
 export class OpenAIResponses implements InferenceEndpoint {
-	endpointMapper: InferenceEndpointMapper
+	endpointMapper: OpenAIResponsesMapper
 	private _client?: OpenAI
 	private readonly clientConfig: OpenAIResponsesConfig
 
-	constructor(
-		endpointMapper: InferenceEndpointMapper = new OpenAIResponsesMapper(),
-		config: OpenAIResponsesConfig = {},
-	) {
+	constructor(endpointMapper = new OpenAIResponsesMapper(), config: OpenAIResponsesConfig = {}) {
 		this.endpointMapper = endpointMapper
 		this.clientConfig = config
 	}

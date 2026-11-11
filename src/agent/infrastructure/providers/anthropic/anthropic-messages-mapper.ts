@@ -1,11 +1,10 @@
 import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import type { ModelOutputItem, ReasoningItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type Anthropic from "@anthropic-ai/sdk"
 
-export class AnthropicMessagesMapper implements InferenceEndpointMapper {
+export class AnthropicMessagesMapper {
 	toRequest(inferenceRequest: InferenceRequest) {
 		const { messages, system } = this.mapContextItems(inferenceRequest)
 		const outputConfig: any = {}

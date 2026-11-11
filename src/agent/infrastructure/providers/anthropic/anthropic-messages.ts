@@ -4,7 +4,6 @@ import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import { AnthropicMessagesMapper } from "@agent/infrastructure/providers/anthropic/anthropic-messages-mapper"
 import Anthropic from "@anthropic-ai/sdk"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 
 export interface AnthropicConnectionConfig {
 	baseURL?: string
@@ -19,14 +18,11 @@ export interface AnthropicConnectionConfig {
  * system prompt, tools, adaptive thinking, and structured output config.
  */
 export class AnthropicMessages implements InferenceEndpoint {
-	endpointMapper: InferenceEndpointMapper
+	endpointMapper: AnthropicMessagesMapper
 	private _client?: Anthropic
 	private readonly clientConfig: AnthropicConnectionConfig
 
-	constructor(
-		endpointMapper: InferenceEndpointMapper = new AnthropicMessagesMapper(),
-		config: AnthropicConnectionConfig = {},
-	) {
+	constructor(endpointMapper = new AnthropicMessagesMapper(), config: AnthropicConnectionConfig = {}) {
 		this.endpointMapper = endpointMapper
 		this.clientConfig = config
 	}

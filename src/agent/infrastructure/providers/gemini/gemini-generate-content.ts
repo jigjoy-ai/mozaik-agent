@@ -4,7 +4,6 @@ import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
 import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import { GeminiGenerateContentMapper } from "@agent/infrastructure/providers/gemini/gemini-generate-content-mapper"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 
 export interface GeminiConnectionConfig {
 	baseURL?: string
@@ -20,14 +19,11 @@ export interface GeminiConnectionConfig {
  * — no runner or port changes.
  */
 export class GeminiGenerateContent implements InferenceEndpoint {
-	endpointMapper: InferenceEndpointMapper
+	endpointMapper: GeminiGenerateContentMapper
 	private _client?: GoogleGenAI
 	private readonly clientConfig: GeminiConnectionConfig
 
-	constructor(
-		endpointMapper: InferenceEndpointMapper = new GeminiGenerateContentMapper(),
-		config: GeminiConnectionConfig = {},
-	) {
+	constructor(endpointMapper = new GeminiGenerateContentMapper(), config: GeminiConnectionConfig = {}) {
 		this.endpointMapper = endpointMapper
 		this.clientConfig = config
 	}

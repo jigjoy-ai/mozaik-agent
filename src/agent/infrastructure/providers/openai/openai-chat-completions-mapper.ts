@@ -1,10 +1,9 @@
 import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import type { ModelOutputItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 
-export class OpenAIChatCompletionsMapper implements InferenceEndpointMapper {
+export class OpenAIChatCompletionsMapper {
 	toRequest(inferenceRequest: InferenceRequest) {
 		const request: any = {
 			model: inferenceRequest.model,

@@ -1,11 +1,10 @@
 import type { InferenceRequest } from "@agent/domain/loop/inference-request"
 import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { InferenceEndpointMapper } from "@agent/domain/inference/inference-endpoint-mapper"
 import type { ModelOutputItem, ReasoningItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type OpenAI from "openai"
 
-export class OpenAIResponsesMapper implements InferenceEndpointMapper {
+export class OpenAIResponsesMapper {
 	toRequest(inferenceRequest: InferenceRequest): any {
 		const request: any = {
 			model: inferenceRequest.model,

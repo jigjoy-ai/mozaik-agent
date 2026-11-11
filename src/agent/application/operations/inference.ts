@@ -1,6 +1,6 @@
 import { InferenceResult } from "@agent/domain/loop/inference-result"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
-import { InferenceRunner } from "@agent/domain/inference/inference-runner"
+import { InferenceRunner } from "@agent/domain/loop/inference-runner"
 import { InferenceInstruction } from "@agent/domain/loop/inference-request"
 
 export class Inference {
