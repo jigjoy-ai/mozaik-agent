@@ -1,17 +1,17 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { ModelOutputItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
+import type { ModelOutputItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 
 export class OpenAIChatCompletionsMapper {
-	toRequest(inferenceRequest: InferenceRequest) {
+	toRequest(instruction: InferenceInstruction) {
 		const request: any = {
-			model: inferenceRequest.model,
-			messages: this.mapContextItems(inferenceRequest),
+			model: instruction.model,
+			messages: this.mapContextItems(instruction),
 		}
 
-		if (inferenceRequest.tools && inferenceRequest.tools.length > 0) {
-			request.tools = inferenceRequest.tools.map((tool) => ({
+		if (instruction.tools && instruction.tools.length > 0) {
+			request.tools = instruction.tools.map((tool) => ({
 				type: "function",
 				function: {
 					name: tool.name,
@@ -21,21 +21,21 @@ export class OpenAIChatCompletionsMapper {
 			}))
 		}
 
-		if (inferenceRequest.reasoningEffort) {
-			request.reasoning_effort = inferenceRequest.reasoningEffort
+		if (instruction.reasoningEffort) {
+			request.reasoning_effort = instruction.reasoningEffort
 		}
 
-		if (inferenceRequest.streaming) {
-			request.stream = inferenceRequest.streaming
+		if (instruction.streaming) {
+			request.stream = instruction.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(inferenceRequest: InferenceRequest): any[] {
+	mapContextItems(instruction: InferenceInstruction): any[] {
 		const messages: any[] = []
 
-		for (const item of inferenceRequest.context.items) {
+		for (const item of instruction.context.items) {
 			if (item.type === "developer_message" || item.type === "system_message") {
 				messages.push({ role: "system", content: item.text })
 				continue
@@ -51,8 +51,8 @@ export class OpenAIChatCompletionsMapper {
 				continue
 			}
 
-			if (item.type === "tool_call_request") {
-				const toolCallRequest = item as ToolCallRequest
+			if (item.type === "tool_call") {
+				const toolCallRequest = item as ToolCallItem
 				const toolCall = {
 					id: toolCallRequest.requestId,
 					type: "function",
@@ -69,7 +69,7 @@ export class OpenAIChatCompletionsMapper {
 			}
 
 			if (item.type === "tool_call_result") {
-				const toolCallResult = item as ToolCallResult
+				const toolCallResult = item as ToolCallResultItem
 				messages.push({
 					role: "tool",
 					tool_call_id: toolCallResult.requestId,
@@ -98,7 +98,12 @@ export class OpenAIChatCompletionsMapper {
 		const items: ModelOutputItem[] = []
 		const message = response.choices?.[0]?.message
 		if (!message) {
-			return { items: [], tokenUsage: this.extractTokenUsage(response), rowResponse: response }
+			return {
+				type: "inference_output",
+				items: [],
+				tokenUsage: this.extractTokenUsage(response),
+				rawResponse: response,
+			}
 		}
 
 		if (message.reasoning_content) {
@@ -119,13 +124,18 @@ export class OpenAIChatCompletionsMapper {
 
 		for (const toolCall of message.tool_calls ?? []) {
 			items.push({
-				type: "tool_call_request",
+				type: "tool_call",
 				requestId: toolCall.id,
 				toolName: toolCall.function.name,
 				toolArguments: toolCall.function.arguments,
 			})
 		}
 
-		return { items, tokenUsage: this.extractTokenUsage(response), rowResponse: response }
+		return {
+			type: "inference_output",
+			items,
+			tokenUsage: this.extractTokenUsage(response),
+			rawResponse: response,
+		}
 	}
 }

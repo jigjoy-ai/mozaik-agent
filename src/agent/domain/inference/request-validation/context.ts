@@ -1,4 +1,4 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
 import type { ContextItem } from "@agent/domain/inference/context"
@@ -22,8 +22,8 @@ function getContextItemValidationKey(item: ContextItem): string {
 export class ContextValidation implements RequestValidationRule {
 	readonly name = "context"
 
-	isValid(inferenceRequest: InferenceRequest, model: ModelSpecification): boolean {
-		return inferenceRequest.context.items.every((item) =>
+	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean {
+		return instruction.context.items.every((item) =>
 			model.supportedContextItemTypes.includes(getContextItemValidationKey(item)),
 		)
 	}

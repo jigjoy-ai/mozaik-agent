@@ -1,9 +1,9 @@
 import { SemanticEvent } from "@util/semantic-event"
-import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
 import { AnthropicMessagesMapper } from "@agent/infrastructure/providers/anthropic/anthropic-messages-mapper"
 import Anthropic from "@anthropic-ai/sdk"
+import { Endpoint } from "@agent/domain/inference/endpoint"
 
 export interface AnthropicConnectionConfig {
 	baseURL?: string
@@ -17,13 +17,13 @@ export interface AnthropicConnectionConfig {
  * Maps domain context to Anthropic's `messages`/`content` blocks shape,
  * system prompt, tools, adaptive thinking, and structured output config.
  */
-export class AnthropicMessages implements InferenceEndpoint {
-	endpointMapper: AnthropicMessagesMapper
+export class AnthropicMessages implements Endpoint {
+	mapper: AnthropicMessagesMapper
 	private _client?: Anthropic
 	private readonly clientConfig: AnthropicConnectionConfig
 
-	constructor(endpointMapper = new AnthropicMessagesMapper(), config: AnthropicConnectionConfig = {}) {
-		this.endpointMapper = endpointMapper
+	constructor(mapper = new AnthropicMessagesMapper(), config: AnthropicConnectionConfig = {}) {
+		this.mapper = mapper
 		this.clientConfig = config
 	}
 
@@ -35,22 +35,22 @@ export class AnthropicMessages implements InferenceEndpoint {
 		}))
 	}
 
-	async infer(inferenceRequest: InferenceRequest): Promise<InferenceResult> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async infer(input: InferenceInstruction): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(input)
 		const response = await this.client.messages.create(request)
 
-		return this.endpointMapper.toResponse(response)
+		return this.mapper.toResponse(response)
 	}
 
-	async *stream(inferenceRequest: InferenceRequest): AsyncIterable<SemanticEvent> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(instruction)
 		const stream = this.client.messages.stream(request)
 
 		for await (const event of stream) {
 			yield event as unknown as SemanticEvent
 		}
 
-		const output = this.endpointMapper.toResponse(await stream.finalMessage())
+		const output = this.mapper.toResponse(await stream.finalMessage())
 
 		yield {
 			type: "inference.output",

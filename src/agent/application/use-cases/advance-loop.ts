@@ -14,9 +14,9 @@ export class AdvanceLoopUseCase {
 			throw new Error("Loop not found")
 		}
 
-		const pendingOperation = loop.getBreakpoint()
-		if (!pendingOperation) {
-			throw new Error("No pending operation found")
+		const breakpoint = loop.getBreakpoint()
+		if (!breakpoint) {
+			throw new Error("No breakpoint found")
 		}
 
 		await this.loopRepository.save(loop)

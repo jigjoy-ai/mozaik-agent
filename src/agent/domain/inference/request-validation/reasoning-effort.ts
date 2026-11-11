@@ -1,12 +1,12 @@
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
-import { InferenceRequest } from "@agent/domain/loop/inference-request"
+import { InferenceInstruction } from "@agent/domain/loop/inference-input"
 
 export class ReasoningEffortValidation implements RequestValidationRule {
 	readonly name = "reasoning-effort"
 
-	isValid(inferenceRequest: InferenceRequest, model: ModelSpecification): boolean {
-		if (inferenceRequest.reasoningEffort === undefined) {
+	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean {
+		if (instruction.reasoningEffort === undefined) {
 			return true
 		}
 
@@ -14,6 +14,6 @@ export class ReasoningEffortValidation implements RequestValidationRule {
 			return false
 		}
 
-		return model.supportedReasoningEfforts.includes(inferenceRequest.reasoningEffort)
+		return model.supportedReasoningEfforts.includes(instruction.reasoningEffort)
 	}
 }

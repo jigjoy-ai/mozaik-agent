@@ -1,18 +1,18 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { ModelOutputItem, ReasoningItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
+import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type OpenAI from "openai"
 
 export class OpenAIResponsesMapper {
-	toRequest(inferenceRequest: InferenceRequest): any {
+	toRequest(instruction: InferenceInstruction): any {
 		const request: any = {
-			model: inferenceRequest.model,
-			input: this.mapContextItems(inferenceRequest),
+			model: instruction.model,
+			input: this.mapContextItems(instruction),
 		}
 
-		if (inferenceRequest.tools && inferenceRequest.tools.length > 0) {
-			request.tools = inferenceRequest.tools.map((tool) => ({
+		if (instruction.tools && instruction.tools.length > 0) {
+			request.tools = instruction.tools.map((tool) => ({
 				type: "function",
 				name: tool.name,
 				description: tool.description,
@@ -20,14 +20,14 @@ export class OpenAIResponsesMapper {
 			}))
 		}
 
-		if (inferenceRequest.reasoningEffort) {
+		if (instruction.reasoningEffort) {
 			request.reasoning = {
-				effort: inferenceRequest.reasoningEffort,
+				effort: instruction.reasoningEffort,
 			}
 		}
 
-		if (inferenceRequest.structuredOutput) {
-			const format = inferenceRequest.structuredOutput
+		if (instruction.structuredOutput) {
+			const format = instruction.structuredOutput
 			request.text = {
 				format: {
 					type: "json_schema",
@@ -38,17 +38,17 @@ export class OpenAIResponsesMapper {
 			}
 		}
 
-		if (inferenceRequest.streaming) {
-			request.stream = inferenceRequest.streaming
+		if (instruction.streaming) {
+			request.stream = instruction.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(inferenceRequest: InferenceRequest): any[] {
+	mapContextItems(instruction: InferenceInstruction): any[] {
 		const input: any[] = []
 
-		for (const item of inferenceRequest.context.items) {
+		for (const item of instruction.context.items) {
 			if (item.type === "developer_message" || item.type === "system_message" || item.type === "user_message") {
 				const role =
 					item.type === "developer_message" ? "developer" : item.type === "system_message" ? "system" : "user"
@@ -69,8 +69,8 @@ export class OpenAIResponsesMapper {
 				continue
 			}
 
-			if (item.type === "tool_call_request") {
-				const toolCallRequest = item as ToolCallRequest
+			if (item.type === "tool_call") {
+				const toolCallRequest = item as ToolCallItem
 				input.push({
 					type: "function_call",
 					call_id: toolCallRequest.requestId,
@@ -81,7 +81,7 @@ export class OpenAIResponsesMapper {
 			}
 
 			if (item.type === "tool_call_result") {
-				const toolCallResult = item as ToolCallResult
+				const toolCallResult = item as ToolCallResultItem
 				input.push({
 					type: "function_call_output",
 					call_id: toolCallResult.requestId,
@@ -134,8 +134,8 @@ export class OpenAIResponsesMapper {
 				continue
 			}
 			if (item.type === "function_call") {
-				const toolCallRequest: ToolCallRequest = {
-					type: "tool_call_request",
+				const toolCallRequest: ToolCallItem = {
+					type: "tool_call",
 					requestId: item.call_id,
 					toolName: item.name,
 					toolArguments: item.arguments,
@@ -157,9 +157,10 @@ export class OpenAIResponsesMapper {
 		}
 
 		return {
+			type: "inference_output",
 			items,
 			tokenUsage: this.extractTokenUsage(response),
-			rowResponse: response,
+			rawResponse: response,
 		}
 	}
 }

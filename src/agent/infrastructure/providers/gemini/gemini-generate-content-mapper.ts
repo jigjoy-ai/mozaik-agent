@@ -1,21 +1,21 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
-import type { ModelOutputItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
+import type { ModelOutputItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 
 export class GeminiGenerateContentMapper {
-	toRequest(inferenceRequest: InferenceRequest) {
-		const { contents, systemInstruction } = this.mapContextItems(inferenceRequest)
+	toRequest(instruction: InferenceInstruction) {
+		const { contents, systemInstruction } = this.mapContextItems(instruction)
 		const config: any = {}
 
 		if (systemInstruction) {
 			config.systemInstruction = systemInstruction
 		}
 
-		if (inferenceRequest.tools && inferenceRequest.tools.length > 0) {
+		if (instruction.tools && instruction.tools.length > 0) {
 			config.tools = [
 				{
-					functionDeclarations: inferenceRequest.tools.map((tool) => ({
+					functionDeclarations: instruction.tools.map((tool) => ({
 						name: tool.name,
 						description: tool.description,
 						parametersJsonSchema: tool.parameters,
@@ -24,33 +24,33 @@ export class GeminiGenerateContentMapper {
 			]
 		}
 
-		if (inferenceRequest.structuredOutput) {
+		if (instruction.structuredOutput) {
 			config.responseMimeType = "application/json"
-			config.responseSchema = inferenceRequest.structuredOutput.schema
+			config.responseSchema = instruction.structuredOutput.schema
 		}
 
-		if (inferenceRequest.reasoningEffort) {
+		if (instruction.reasoningEffort) {
 			config.thinkingConfig = {
-				thinkingLevel: inferenceRequest.reasoningEffort,
+				thinkingLevel: instruction.reasoningEffort,
 				includeThoughts: true,
 			}
 		}
 
 		const request: any = {
-			model: inferenceRequest.model,
+			model: instruction.model,
 			contents,
 			config,
 		}
 
-		if (inferenceRequest.streaming) {
-			request.stream = inferenceRequest.streaming
+		if (instruction.streaming) {
+			request.stream = instruction.streaming
 		}
 
 		return request
 	}
 
-	mapContextItems(inferenceRequest: InferenceRequest): { contents: any[]; systemInstruction?: string } {
-		const context = inferenceRequest.context
+	mapContextItems(instruction: InferenceInstruction): { contents: any[]; systemInstruction?: string } {
+		const context = instruction.context
 		const contents: any[] = []
 		const system: string[] = []
 		const callNames = new Map<string, string>()
@@ -71,8 +71,8 @@ export class GeminiGenerateContentMapper {
 				continue
 			}
 
-			if (item.type === "tool_call_request") {
-				const toolCallRequest = item as ToolCallRequest
+			if (item.type === "tool_call") {
+				const toolCallRequest = item as ToolCallItem
 				callNames.set(toolCallRequest.requestId, toolCallRequest.toolName)
 				let args: any
 				try {
@@ -87,7 +87,7 @@ export class GeminiGenerateContentMapper {
 			}
 
 			if (item.type === "tool_call_result") {
-				const toolUseResult = item as ToolCallResult
+				const toolUseResult = item as ToolCallResultItem
 				this.addPart(contents, "user", {
 					functionResponse: {
 						id: toolUseResult.requestId,
@@ -160,7 +160,7 @@ export class GeminiGenerateContentMapper {
 			}
 			if (part.functionCall) {
 				items.push({
-					type: "tool_call_request",
+					type: "tool_call",
 					requestId: part.functionCall.id ?? "",
 					toolName: part.functionCall.name,
 					toolArguments: JSON.stringify(part.functionCall.args ?? {}),
@@ -168,6 +168,11 @@ export class GeminiGenerateContentMapper {
 			}
 		}
 
-		return { items, tokenUsage: this.extractTokenUsage(response), rowResponse: response }
+		return {
+			type: "inference_output",
+			items,
+			tokenUsage: this.extractTokenUsage(response),
+			rawResponse: response,
+		}
 	}
 }

@@ -2,10 +2,11 @@ import { InMemoryAgentRepository } from "@agent/infrastructure/repositories/in-m
 import { InMemoryLoopRepository } from "@agent/infrastructure/repositories/in-memory-loop-repository"
 import { RuntimeMemoryFactory } from "@agent/infrastructure/memory/runtime-memory-factory"
 import { AgentModule, AgentModuleConfig } from "@agent/types"
-import { DefaultInferenceRunner } from "@agent/application/runners/inference-runner"
 import { supportedModels } from "@agent/infrastructure/providers/supported-models"
-import { InferenceRequestValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
-import { Inference } from "@agent/application/operations/inference"
+import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
+import { InferenceProcessorImpl } from "@agent/application/processors/inference-processor"
+import { ToolCallProcessorImpl } from "@agent/application/processors/tool-call-processor"
+import { ToolRegistry } from "@agent/domain/loop/tool-registry"
 
 let module: AgentModule | undefined
 
@@ -19,10 +20,10 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 
 	const models = config.inferenceRunnerConfig?.supportedModels ?? supportedModels
 
-	const inferenceRunner = new DefaultInferenceRunner(models, new InferenceRequestValidator())
+	const inferenceProcessor = new InferenceProcessorImpl(models, new InferenceInstructionValidator())
+	const toolCallProcessor = new ToolCallProcessorImpl(new ToolRegistry())
 
 	const loopRepository = new InMemoryLoopRepository()
-	const inferenceOperation = new Inference(loopRepository, inferenceRunner)
 
 	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
 

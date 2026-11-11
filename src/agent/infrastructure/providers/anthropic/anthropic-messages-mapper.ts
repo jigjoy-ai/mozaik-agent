@@ -1,51 +1,51 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { ModelOutputItem, ReasoningItem, ToolCallRequest, ToolCallResult } from "@agent/domain/inference/context"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
+import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type Anthropic from "@anthropic-ai/sdk"
 
 export class AnthropicMessagesMapper {
-	toRequest(inferenceRequest: InferenceRequest) {
-		const { messages, system } = this.mapContextItems(inferenceRequest)
+	toRequest(instruction: InferenceInstruction) {
+		const { messages, system } = this.mapContextItems(instruction)
 		const outputConfig: any = {}
 
 		const request: any = {
-			model: inferenceRequest.model,
+			model: instruction.model,
 			messages,
 		}
 
-		request.max_tokens = inferenceRequest.maxOutputTokens!
+		request.max_tokens = instruction.maxOutputTokens!
 
 		if (system) {
 			request.system = system
 		}
 
-		if (inferenceRequest.tools && inferenceRequest.tools.length > 0) {
-			request.tools = inferenceRequest.tools.map((tool) => ({
+		if (instruction.tools && instruction.tools.length > 0) {
+			request.tools = instruction.tools.map((tool) => ({
 				name: tool.name,
 				description: tool.description,
 				input_schema: tool.parameters,
 			}))
 		}
 
-		if (inferenceRequest.structuredOutput) {
+		if (instruction.structuredOutput) {
 			outputConfig.format = {
 				type: "json_schema",
-				schema: inferenceRequest.structuredOutput.schema,
+				schema: instruction.structuredOutput.schema,
 			}
 		}
 
-		if (inferenceRequest.reasoningEffort) {
+		if (instruction.reasoningEffort) {
 			request.thinking = { type: "adaptive" }
-			outputConfig.effort = inferenceRequest.reasoningEffort
+			outputConfig.effort = instruction.reasoningEffort
 		}
 
 		if (Object.keys(outputConfig).length > 0) {
 			request.output_config = outputConfig
 		}
 
-		if (inferenceRequest.streaming) {
-			request.stream = inferenceRequest.streaming
+		if (instruction.streaming) {
+			request.stream = instruction.streaming
 		}
 
 		return request
@@ -64,8 +64,8 @@ export class AnthropicMessagesMapper {
 		})
 	}
 
-	mapContextItems(inferenceRequest: InferenceRequest): { messages: any[]; system?: string } {
-		const context = inferenceRequest.context
+	mapContextItems(instruction: InferenceInstruction): { messages: any[]; system?: string } {
+		const context = instruction.context
 		const messages: any[] = []
 		const system: string[] = []
 
@@ -95,8 +95,8 @@ export class AnthropicMessagesMapper {
 				continue
 			}
 
-			if (item.type === "tool_call_request") {
-				const toolCallRequest = item as ToolCallRequest
+			if (item.type === "tool_call") {
+				const toolCallRequest = item as ToolCallItem
 				let input: any
 				try {
 					input = JSON.parse(toolCallRequest.toolArguments)
@@ -113,7 +113,7 @@ export class AnthropicMessagesMapper {
 			}
 
 			if (item.type === "tool_call_result") {
-				const toolCallResult = item as ToolCallResult
+				const toolCallResult = item as ToolCallResultItem
 				this.addContentBlock(messages, "user", {
 					type: "tool_result",
 					tool_call_id: toolCallResult.requestId,
@@ -156,7 +156,7 @@ export class AnthropicMessagesMapper {
 			}
 			if (block.type === "tool_call") {
 				items.push({
-					type: "tool_call_request",
+					type: "tool_call",
 					requestId: block.id,
 					toolName: block.name,
 					toolArguments: JSON.stringify(block.input ?? {}),
@@ -173,6 +173,11 @@ export class AnthropicMessagesMapper {
 			}
 		}
 
-		return { items, tokenUsage: this.extractTokenUsage(response), rowResponse: response }
+		return {
+			type: "inference_output",
+			items,
+			tokenUsage: this.extractTokenUsage(response),
+			rawResponse: response,
+		}
 	}
 }

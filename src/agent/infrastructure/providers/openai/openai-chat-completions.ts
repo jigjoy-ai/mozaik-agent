@@ -1,9 +1,9 @@
-import { InferenceRequest } from "@agent/domain/loop/inference-request"
-import { InferenceResult } from "@agent/domain/loop/inference-result"
+import { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import { InferenceResult } from "@agent/domain/loop/inference-output"
 import { SemanticEvent } from "@util/semantic-event"
-import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
 import { OpenAIChatCompletionsMapper } from "@agent/infrastructure/providers/openai/openai-chat-completions-mapper"
 import OpenAI from "openai"
+import { Endpoint } from "@agent/domain/inference/endpoint"
 
 /**
  * Optional connection config. When omitted, the `openai` SDK reads
@@ -43,14 +43,14 @@ export interface OpenAICompatibleConfig {
  * Was `DeepSeekChatCompletions`; generalized so consumers can point it
  * at any OpenAI-compatible endpoint.
  */
-export class OpenAIChatCompletions implements InferenceEndpoint {
-	endpointMapper: OpenAIChatCompletionsMapper
+export class OpenAIChatCompletions implements Endpoint {
+	mapper: OpenAIChatCompletionsMapper
 	private _client?: OpenAI
 	private readonly clientConfig: OpenAICompatibleConfig
 	private readonly extraBody: Record<string, unknown>
 
-	constructor(endpointMapper = new OpenAIChatCompletionsMapper(), config: OpenAICompatibleConfig = {}) {
-		this.endpointMapper = endpointMapper
+	constructor(mapper = new OpenAIChatCompletionsMapper(), config: OpenAICompatibleConfig = {}) {
+		this.mapper = mapper
 		this.clientConfig = config
 		this.extraBody = config.extraBody ?? {}
 	}
@@ -64,33 +64,33 @@ export class OpenAIChatCompletions implements InferenceEndpoint {
 		}))
 	}
 
-	private buildRequest(inferenceRequest: InferenceRequest): any {
+	private buildRequest(instruction: InferenceInstruction): any {
 		return {
 			...this.extraBody,
-			...this.endpointMapper.toRequest(inferenceRequest),
+			...this.mapper.toRequest(instruction),
 		}
 	}
 
-	async infer(inferenceRequest: InferenceRequest): Promise<InferenceResult> {
-		const response = await this.client.chat.completions.create(this.buildRequest(inferenceRequest))
+	async infer(input: InferenceInstruction): Promise<InferenceResult> {
+		const response = await this.client.chat.completions.create(this.buildRequest(input))
 
-		return this.endpointMapper.toResponse(response)
+		return this.mapper.toResponse(response)
 	}
 
-	async *stream(inferenceRequest: InferenceRequest): AsyncIterable<SemanticEvent> {
-		const stream = this.client.chat.completions.stream(this.buildRequest(inferenceRequest))
+	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
+		const stream = this.client.chat.completions.stream(this.buildRequest(instruction))
 
 		for await (const chunk of stream) {
 			yield chunk as unknown as SemanticEvent
 		}
 
-		const output = this.endpointMapper.toResponse(await stream.finalChatCompletion())
+		const output = this.mapper.toResponse(await stream.finalChatCompletion())
 
 		yield {
 			type: "inference.output",
 			payload: output,
 			occurredAt: new Date(),
-			producerId: inferenceRequest.model,
+			producerId: instruction.model,
 		}
 	}
 }

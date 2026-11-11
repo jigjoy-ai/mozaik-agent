@@ -1,7 +1,7 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
 
 export interface RequestValidationRule {
 	readonly name: string
-	isValid(inferenceRequest: InferenceRequest, model: ModelSpecification): boolean
+	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean
 }

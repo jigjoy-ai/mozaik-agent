@@ -1,7 +1,5 @@
 import type { Context } from "@agent/domain/inference/context"
-import { InferenceOutput } from "@agent/domain/loop/inference-result"
-import { ToolCallOutput } from "@agent/domain/loop/inference-request"
-import { InstructionOutput, LoopInstruction } from "@agent/domain/loop/instruction"
+import { InstructionResult, Instruction } from "@agent/domain/loop/instruction"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
 
@@ -11,8 +9,8 @@ export class Loop {
 	assignee: string
 	state: LoopStateId
 	context: Context
-	pendingInstruction: LoopInstruction | undefined
-	completedInstructions: LoopInstruction[]
+	pendingInstruction: Instruction | undefined
+	completedInstructions: Instruction[]
 
 	constructor(
 		id: string,
@@ -20,8 +18,8 @@ export class Loop {
 		assignee: string,
 		context: Context,
 		state: LoopStateId,
-		pendingInstruction: LoopInstruction | undefined,
-		completedInstructions: LoopInstruction[],
+		pendingInstruction: Instruction | undefined,
+		completedInstructions: Instruction[],
 	) {
 		this.id = id
 		this.goal = goal
@@ -32,7 +30,7 @@ export class Loop {
 		this.completedInstructions = completedInstructions
 	}
 
-	setBreakpoint(instruction: LoopInstruction): void {
+	setBreakpoint(instruction: Instruction): void {
 		if (this.pendingInstruction) {
 			throw new Error("An instruction is already pending")
 		}
@@ -40,23 +38,20 @@ export class Loop {
 		this.pendingInstruction = instruction
 	}
 
-	getBreakpoint(): LoopInstruction | undefined {
+	getBreakpoint(): Instruction | undefined {
 		return this.pendingInstruction
 	}
 
-	resolveBreakpoint(output: InstructionOutput): void {
+	resolveBreakpoint(result: InstructionResult): void {
 		if (!this.pendingInstruction) {
 			throw new Error("No pending instruction to resolve")
 		}
 
-		if (this.pendingInstruction.type === "inference" && !(output.type === "inference_output")) {
+		if (this.pendingInstruction.type === "inference" && !(result.type === "inference_output")) {
 			throw new Error("Inference output required")
-		} else if (this.pendingInstruction.type === "tool-call" && !(output.type === "tool_call_output")) {
+		} else if (this.pendingInstruction.type === "tool-call" && !(result.type === "tool_call_output")) {
 			throw new Error("Tool call output required")
 		}
-
-		this.pendingInstruction.completedAt = new Date()
-		this.pendingInstruction.output = output
 
 		this.completedInstructions.push(this.pendingInstruction)
 		this.pendingInstruction = undefined

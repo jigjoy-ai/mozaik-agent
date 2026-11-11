@@ -1,9 +1,9 @@
 import { SemanticEvent } from "@util/semantic-event"
 import { GoogleGenAI } from "@google/genai"
-import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import type { InferenceResult } from "@agent/domain/loop/inference-output"
 import { GeminiGenerateContentMapper } from "@agent/infrastructure/providers/gemini/gemini-generate-content-mapper"
+import { Endpoint } from "@agent/domain/inference/endpoint"
 
 export interface GeminiConnectionConfig {
 	baseURL?: string
@@ -18,13 +18,13 @@ export interface GeminiConnectionConfig {
  * thought parts + native usage metadata back out. Another `ModelRuntime`
  * — no runner or port changes.
  */
-export class GeminiGenerateContent implements InferenceEndpoint {
-	endpointMapper: GeminiGenerateContentMapper
+export class GeminiGenerateContent implements Endpoint {
+	mapper: GeminiGenerateContentMapper
 	private _client?: GoogleGenAI
 	private readonly clientConfig: GeminiConnectionConfig
 
-	constructor(endpointMapper = new GeminiGenerateContentMapper(), config: GeminiConnectionConfig = {}) {
-		this.endpointMapper = endpointMapper
+	constructor(mapper = new GeminiGenerateContentMapper(), config: GeminiConnectionConfig = {}) {
+		this.mapper = mapper
 		this.clientConfig = config
 	}
 
@@ -35,15 +35,15 @@ export class GeminiGenerateContent implements InferenceEndpoint {
 		}))
 	}
 
-	async infer(inferenceRequest: InferenceRequest): Promise<InferenceResult> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async infer(input: InferenceInstruction): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(input)
 		const response = await this.client.models.generateContent(request)
 
-		return this.endpointMapper.toResponse(response)
+		return this.mapper.toResponse(response)
 	}
 
-	async *stream(inferenceRequest: InferenceRequest): AsyncIterable<SemanticEvent> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(instruction)
 		const stream: any = await this.client.models.generateContentStream(request)
 
 		let lastEvent: SemanticEvent | undefined = undefined
@@ -56,7 +56,7 @@ export class GeminiGenerateContent implements InferenceEndpoint {
 			throw new Error("Last event not found")
 		}
 
-		const output = this.endpointMapper.toResponse(lastEvent)
+		const output = this.mapper.toResponse(lastEvent)
 
 		yield {
 			type: "inference.output",

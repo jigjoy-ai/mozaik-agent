@@ -1,9 +1,9 @@
 import { SemanticEvent } from "@util/semantic-event"
-import { InferenceRequest } from "@agent/domain/loop/inference-request"
-import { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { InferenceEndpoint } from "@agent/domain/loop/inference-endpoint"
+import { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import { InferenceResult } from "@agent/domain/loop/inference-output"
 import { OpenAIResponsesMapper } from "@agent/infrastructure/providers/openai/openai-responses-mapper"
 import OpenAI from "openai"
+import { Endpoint } from "@agent/domain/inference/endpoint"
 
 /**
  * Optional connection config. When omitted, the `openai` SDK reads
@@ -14,13 +14,13 @@ export interface OpenAIResponsesConfig {
 	apiKey?: string
 }
 
-export class OpenAIResponses implements InferenceEndpoint {
-	endpointMapper: OpenAIResponsesMapper
+export class OpenAIResponses implements Endpoint {
+	mapper: OpenAIResponsesMapper
 	private _client?: OpenAI
 	private readonly clientConfig: OpenAIResponsesConfig
 
-	constructor(endpointMapper = new OpenAIResponsesMapper(), config: OpenAIResponsesConfig = {}) {
-		this.endpointMapper = endpointMapper
+	constructor(mapper = new OpenAIResponsesMapper(), config: OpenAIResponsesConfig = {}) {
+		this.mapper = mapper
 		this.clientConfig = config
 	}
 
@@ -33,15 +33,15 @@ export class OpenAIResponses implements InferenceEndpoint {
 		}))
 	}
 
-	async infer(inferenceRequest: InferenceRequest): Promise<InferenceResult> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async infer(instruction: InferenceInstruction): Promise<InferenceResult> {
+		const request = this.mapper.toRequest(instruction)
 		const response = await this.client.responses.create(request)
 
-		return this.endpointMapper.toResponse(response)
+		return this.mapper.toResponse(response)
 	}
 
-	async *stream(inferenceRequest: InferenceRequest): AsyncIterable<SemanticEvent> {
-		const request = this.endpointMapper.toRequest(inferenceRequest)
+	async *stream(instruction: InferenceInstruction): AsyncIterable<SemanticEvent> {
+		const request = this.mapper.toRequest(instruction)
 		const stream: any = await this.client.responses.create({ ...request, stream: true })
 
 		// Only the terminal `response.completed` event carries the assembled
@@ -59,13 +59,13 @@ export class OpenAIResponses implements InferenceEndpoint {
 			throw new Error("Stream ended without a completed response")
 		}
 
-		const output = this.endpointMapper.toResponse(completedResponse)
+		const output = this.mapper.toResponse(completedResponse)
 
 		yield {
 			type: "inference.output",
 			payload: output,
 			occurredAt: new Date(),
-			producerId: inferenceRequest.model,
+			producerId: instruction.model,
 		}
 	}
 }

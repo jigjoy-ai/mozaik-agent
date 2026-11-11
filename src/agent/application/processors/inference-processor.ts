@@ -1,19 +1,17 @@
-import type { InferenceRunner } from "@agent/domain/loop/inference-runner"
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
-import type { InferenceResult } from "@agent/domain/loop/inference-result"
-import type { InferenceRequestValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
+import { InferenceResult } from "@agent/domain/loop/inference-output"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
+import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
+import { InferenceInstruction } from "@agent/domain/loop/inference-input"
 import { SemanticEvent } from "@util/semantic-event"
+import { InferenceProcessor } from "@agent/domain/loop/instruction"
 
-export type InferenceCompletedParams = { answer: string; producerId: string; price?: number }
-
-export class DefaultInferenceRunner implements InferenceRunner {
+export class InferenceProcessorImpl implements InferenceProcessor {
 	constructor(
 		private readonly supportedModels: GenerativeModel[],
-		private readonly requestValidator: InferenceRequestValidator,
+		private readonly requestValidator: InferenceInstructionValidator,
 	) {}
 
-	async run(input: InferenceRequest): Promise<InferenceResult> {
+	async run(input: InferenceInstruction): Promise<InferenceResult> {
 		const generativeModel = this.supportedModels.find((model) => model.specification.name === input.model)
 		if (!generativeModel) {
 			throw new Error(`Unsupported model: ${input.model}`)
@@ -24,7 +22,7 @@ export class DefaultInferenceRunner implements InferenceRunner {
 		return await generativeModel.endpoint.infer(input)
 	}
 
-	async *stream(input: InferenceRequest): AsyncGenerator<SemanticEvent> {
+	async *stream(input: InferenceInstruction): AsyncGenerator<SemanticEvent> {
 		const generativeModel = this.supportedModels.find((model) => model.specification.name === input.model)
 		if (!generativeModel) {
 			throw new Error(`Unsupported model: ${input.model}`)

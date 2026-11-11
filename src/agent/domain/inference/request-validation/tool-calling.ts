@@ -1,12 +1,12 @@
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
-import { InferenceRequest } from "@agent/domain/loop/inference-request"
+import { InferenceInstruction } from "@agent/domain/loop/inference-input"
 
 export class ToolUseRequestingValidation implements RequestValidationRule {
 	readonly name = "tool-calling"
 
-	isValid(inferenceRequest: InferenceRequest, model: ModelSpecification): boolean {
-		if (inferenceRequest.tools === undefined) {
+	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean {
+		if (instruction.tools === undefined) {
 			return true
 		}
 

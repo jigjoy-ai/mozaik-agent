@@ -1,4 +1,4 @@
-import type { InferenceRequest } from "@agent/domain/loop/inference-request"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 
@@ -11,8 +11,8 @@ export type StructuredOutputFormat = {
 export class StructuredOutputValidation implements RequestValidationRule {
 	readonly name = "structured-output"
 
-	isValid(inferenceRequest: InferenceRequest, model: ModelSpecification): boolean {
-		if (inferenceRequest.structuredOutput === undefined) {
+	isValid(instruction: InferenceInstruction, model: ModelSpecification): boolean {
+		if (instruction.structuredOutput === undefined) {
 			return true
 		}
 

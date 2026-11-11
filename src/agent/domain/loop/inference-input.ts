@@ -1,17 +1,9 @@
 import { StructuredOutputFormat } from "@agent/domain/inference/request-validation/structured-output"
 import type { Context } from "@agent/domain/inference/context"
 import type { ToolDefinition } from "@agent/domain/inference/tool"
-import { InferenceOutput } from "./inference-result"
 
 export type InferenceInstruction = {
-	type: "inference"
-	requestedAt: Date
-	completedAt: Date | undefined
-	input: InferenceInput
-	output?: InferenceOutput
-}
-
-export type InferenceInput = {
+	readonly type: "inference"
 	model: string
 	maxOutputTokens?: number
 	reasoningEffort?: string
@@ -21,12 +13,13 @@ export type InferenceInput = {
 	context: Context
 }
 
-export type ToolCallInput = {
+export type ToolCallInstruction = {
+	readonly type: "tool-call"
 	toolName: string
 	toolArguments: string
 }
 
-export type ToolCallOutput = {
+export type ToolCallResult = {
 	readonly type: "tool_call_output"
 	result: string
 }
