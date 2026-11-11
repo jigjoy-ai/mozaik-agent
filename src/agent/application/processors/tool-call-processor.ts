@@ -1,4 +1,5 @@
-import { ToolCallInstruction, ToolCallResult } from "@agent/domain/loop/inference-input"
+import { ToolCallInstruction } from "@agent/domain/loop/tool-call-instruction"
+import { ToolCallResult } from "@agent/domain/loop/tool-call-result"
 import { ToolRegistry } from "@agent/domain/loop/tool-registry"
 import { Tool } from "@agent/domain/inference/tool"
 import { ToolCallProcessor } from "@agent/domain/loop/instruction"

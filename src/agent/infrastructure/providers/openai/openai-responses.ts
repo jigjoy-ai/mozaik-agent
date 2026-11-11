@@ -1,6 +1,6 @@
 import { SemanticEvent } from "@util/semantic-event"
-import { InferenceInstruction } from "@agent/domain/loop/inference-input"
-import { InferenceResult } from "@agent/domain/loop/inference-output"
+import { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
+import { InferenceResult } from "@agent/domain/loop/inference-result"
 import { OpenAIResponsesMapper } from "@agent/infrastructure/providers/openai/openai-responses-mapper"
 import OpenAI from "openai"
 import { Endpoint } from "@agent/domain/inference/endpoint"

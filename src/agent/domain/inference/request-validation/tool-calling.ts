@@ -1,6 +1,6 @@
 import type { RequestValidationRule } from "@agent/domain/inference/request-validation/rule"
 import type { ModelSpecification } from "@agent/domain/inference/generative-model"
-import { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
 
 export class ToolUseRequestingValidation implements RequestValidationRule {
 	readonly name = "tool-calling"

@@ -1,7 +1,7 @@
-import { InferenceResult } from "@agent/domain/loop/inference-output"
+import { InferenceResult } from "@agent/domain/loop/inference-result"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
 import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
-import { InferenceInstruction } from "@agent/domain/loop/inference-input"
+import { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
 import { SemanticEvent } from "@util/semantic-event"
 import { InferenceProcessor } from "@agent/domain/loop/instruction"
 

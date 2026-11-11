@@ -1,5 +1,5 @@
-import type { InferenceInstruction } from "@agent/domain/loop/inference-input"
-import type { InferenceResult } from "@agent/domain/loop/inference-output"
+import type { InferenceInstruction } from "@agent/domain/loop/inference-instruction"
+import type { InferenceResult } from "@agent/domain/loop/inference-result"
 import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem } from "@agent/domain/inference/context"
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type Anthropic from "@anthropic-ai/sdk"
