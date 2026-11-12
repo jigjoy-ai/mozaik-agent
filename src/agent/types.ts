@@ -1,13 +1,13 @@
 import { MemoryFactory } from "@agent/domain/memory"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
-import { InferenceRunner } from "@agent/domain/loop/inference-runner"
 import { AgentRepository } from "@agent/domain/agent-repository"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
 import { ToolDefinition } from "@agent/domain/inference/tool"
+import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
 
 type InferenceRunnerConfig = {
 	supportedModels?: GenerativeModel[]
-	runner?: InferenceRunner
+	instructionRegistry?: InstructionRegistry
 }
 
 type AgentModuleConfig = {
@@ -20,7 +20,7 @@ type AgentModuleConfig = {
 type AgentModule = {
 	agentRepository: AgentRepository
 	agentLoopRepository: LoopRepository
-	//inferenceRunner: InferenceRunner
+	instructionRegistry: InstructionRegistry
 	memoryFactory: MemoryFactory
 }
 

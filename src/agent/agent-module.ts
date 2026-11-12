@@ -4,9 +4,10 @@ import { RuntimeMemoryFactory } from "@agent/infrastructure/memory/runtime-memor
 import { AgentModule, AgentModuleConfig } from "@agent/types"
 import { supportedModels } from "@agent/infrastructure/providers/supported-models"
 import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
-import { Inference } from "@agent/application/processors/inference"
-import { ToolCall } from "@agent/application/processors/tool-call"
-import { ToolRegistry } from "@agent/domain/loop/tool-registry"
+import { Inference } from "@agent/application/instructions/inference"
+import { ToolCall } from "@agent/application/instructions/tool-call"
+import { ToolRegistry } from "@agent/domain/tool-registry"
+import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
 
 let module: AgentModule | undefined
 
@@ -23,6 +24,10 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	const inferenceInstruction = new Inference(models, new InferenceInstructionValidator())
 	const toolCallInstruction = new ToolCall(new ToolRegistry())
 
+	const instructionRegistry = new InstructionRegistry()
+	instructionRegistry.register("inference", inferenceInstruction)
+	instructionRegistry.register("tool_call", toolCallInstruction)
+
 	const loopRepository = new InMemoryLoopRepository()
 
 	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
@@ -30,7 +35,7 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	module = {
 		agentRepository,
 		agentLoopRepository,
-		// inferenceRunner,
+		instructionRegistry,
 		memoryFactory,
 	}
 }

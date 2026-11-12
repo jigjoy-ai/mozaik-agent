@@ -1,6 +1,6 @@
 import { ToolCallParams } from "@agent/domain/instruction/tool-call"
 import { ToolCallInstruction, ToolCallResult } from "@agent/domain/instruction/tool-call"
-import { ToolRegistry } from "@agent/domain/loop/tool-registry"
+import { ToolRegistry } from "@agent/domain/tool-registry"
 import { Tool } from "@agent/domain/inference/tool"
 
 export class ToolCall implements ToolCallInstruction {
