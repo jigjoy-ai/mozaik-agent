@@ -45,7 +45,7 @@ export class Loop {
 			throw new Error("No instruction to resolve")
 		}
 
-		if (this.pendingInstruction.instructionType !== instruction.instructionType) {
+		if (this.pendingInstruction.type !== instruction.type) {
 			throw new Error("Instruction type mismatch")
 		}
 

@@ -23,7 +23,7 @@ export class AdvanceLoopUseCase {
 			throw new Error("No pending instruction found")
 		}
 
-		const instruction = this.instructionRegistry.getInstruction(pendingInstruction.instructionType)
+		const instruction = this.instructionRegistry.getInstruction(pendingInstruction.type)
 		if (!instruction) {
 			throw new Error("Instruction not found")
 		}
