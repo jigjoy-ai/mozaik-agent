@@ -1,5 +1,6 @@
-import type { Context } from "@agent/domain/inference/context"
 import { InstructionRecord } from "@agent/domain/loop/loop-breakpoint"
+import { UuidGenerator } from "@util/uuid-generator"
+import { LoopRecord } from "./loop-record"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
 
@@ -8,15 +9,13 @@ export class Loop {
 	goal: string
 	assignee: string
 	state: LoopStateId
-	context: Context
 	pendingInstruction: InstructionRecord | undefined
 	completedInstructions: InstructionRecord[]
 
-	constructor(
+	private constructor(
 		id: string,
 		goal: string,
 		assignee: string,
-		context: Context,
 		state: LoopStateId,
 		pendingInstruction: InstructionRecord | undefined,
 		completedInstructions: InstructionRecord[],
@@ -24,7 +23,6 @@ export class Loop {
 		this.id = id
 		this.goal = goal
 		this.assignee = assignee
-		this.context = context
 		this.state = state
 		this.pendingInstruction = pendingInstruction
 		this.completedInstructions = completedInstructions
@@ -73,5 +71,21 @@ export class Loop {
 
 	end(): void {
 		this.state = "completed"
+	}
+
+	static create(goal: string, assignee: string): Loop {
+		const id = UuidGenerator.generate()
+		return new Loop(id, goal, assignee, "idle", undefined, [])
+	}
+
+	static rehydrate(record: LoopRecord): Loop {
+		return new Loop(
+			record.id,
+			record.goal,
+			record.assignee,
+			record.state,
+			record.pendingInstruction,
+			record.completedInstructions,
+		)
 	}
 }

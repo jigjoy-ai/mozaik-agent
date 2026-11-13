@@ -1,20 +1,24 @@
 import { Loop } from "@agent/domain/loop/loop"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
-import { Context } from "@agent/domain/inference/context"
+import { AgentRepository } from "@agent/domain/agent/agent-repository"
 
 export type StartLoopInput = {
 	agentId: string
-	subject: string
+	goal: string
 }
 
 export class StartLoopUseCase {
-	constructor(private readonly loopRepository: LoopRepository) {}
+	constructor(
+		private readonly agentRepository: AgentRepository,
+		private readonly loopRepository: LoopRepository,
+	) {}
 
-	async invoke(input: StartLoopInput): Promise<Loop> {
-		const context: Context = {
-			items: [],
+	async execute(input: StartLoopInput): Promise<Loop> {
+		const agent = await this.agentRepository.findById(input.agentId)
+		if (!agent) {
+			throw new Error("Agent not found")
 		}
-		const loop = new Loop(input.agentId, input.subject, input.agentId, context, "idle", undefined, [])
+		const loop = Loop.create(input.goal, input.agentId)
 		await this.loopRepository.save(loop)
 		return loop
 	}

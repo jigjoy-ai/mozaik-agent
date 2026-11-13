@@ -1,11 +1,10 @@
 import { LoopStateId } from "@agent/domain/loop/loop"
 import { InstructionRecord } from "@agent/domain/loop/loop-breakpoint"
 
-export interface LoopRecord {
+export type LoopRecord = {
 	id: string
-	agentId: string
-	subject: string
-	createdAt: Date
+	assignee: string
+	goal: string
 	state: LoopStateId
 	pendingInstruction?: InstructionRecord
 	completedInstructions: InstructionRecord[]

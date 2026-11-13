@@ -1,4 +1,4 @@
-import { Memory } from "@agent/domain/memory"
+import { Memory } from "@agent/domain/agent/memory"
 import type { ToolDefinition } from "@agent/domain/inference/tool"
 
 export type AgentRecord = {

@@ -1,5 +1,5 @@
 import { Memory } from "@agent/domain/memory"
-import { AgentRecord } from "@agent/domain/record"
+import { AgentRecord } from "@jigjoy/mozaik-agent/src/agent/domain/agent/record"
 import type { ToolDefinition } from "@agent/domain/inference/tool"
 import { UuidGenerator } from "@util/uuid-generator"
 

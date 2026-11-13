@@ -8,10 +8,10 @@ import { Inference } from "@agent/application/instructions/inference"
 import { ToolCall } from "@agent/application/instructions/tool-call"
 import { ToolRegistry } from "@agent/domain/tool-registry"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
-import { AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
-import { SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
-import { StartLoopUseCase } from "@agent/application/use-cases/start-loop"
-import { EndLoopUseCase } from "@agent/application/use-cases/end-loop"
+import { AdvanceLoopInput, AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
+import { SetBreakpointInput, SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
+import { StartLoopInput, StartLoopUseCase } from "@agent/application/use-cases/start-loop"
+import { EndLoopInput, EndLoopUseCase } from "@agent/application/use-cases/end-loop"
 
 let module: AgentModule | undefined
 
@@ -34,16 +34,24 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 
 	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
 
-	const advanceLoop = new AdvanceLoopUseCase(loopRepository, instructionRegistry)
-	const setBreakpoint = new SetBreakpointUseCase(loopRepository)
-	const startLoop = new StartLoopUseCase(loopRepository)
-	const endLoop = new EndLoopUseCase(loopRepository)
+	const advanceLoop = async (input: AdvanceLoopInput) => {
+		const advanceLoopUseCase = new AdvanceLoopUseCase(loopRepository, instructionRegistry)
+		return advanceLoopUseCase.execute(input)
+	}
+	const setBreakpoint = async (input: SetBreakpointInput) => {
+		const setBreakpointUseCase = new SetBreakpointUseCase(loopRepository)
+		return setBreakpointUseCase.execute(input)
+	}
+	const startLoop = async (input: StartLoopInput) => {
+		const startLoopUseCase = new StartLoopUseCase(agentRepository, loopRepository)
+		return startLoopUseCase.execute(input)
+	}
+	const endLoop = async (input: EndLoopInput) => {
+		const endLoopUseCase = new EndLoopUseCase(loopRepository)
+		return endLoopUseCase.execute(input)
+	}
 
 	module = {
-		agentRepository,
-		loopRepository,
-		instructionRegistry,
-		memoryFactory,
 		advanceLoop,
 		setBreakpoint,
 		startLoop,

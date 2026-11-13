@@ -1,6 +1,6 @@
-import { Agent } from "@agent/domain/agent"
-import { AgentRepository } from "@agent/domain/agent-repository"
-import { MemoryFactory } from "@agent/domain/memory"
+import { Agent } from "@agent/domain/agent/agent"
+import { AgentRepository } from "@agent/domain/agent/agent-repository"
+import { MemoryFactory } from "@agent/domain/agent/memory"
 import { CreateAgentParams } from "@agent/types"
 
 export class CreateAgentUseCase {
