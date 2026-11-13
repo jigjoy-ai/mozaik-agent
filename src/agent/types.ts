@@ -4,6 +4,10 @@ import { AgentRepository } from "@agent/domain/agent-repository"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
 import { ToolDefinition } from "@agent/domain/inference/tool"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
+import { AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
+import { SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
+import { StartLoopUseCase } from "@agent/application/use-cases/start-loop"
+import { EndLoopUseCase } from "@agent/application/use-cases/end-loop"
 
 type InferenceRunnerConfig = {
 	supportedModels?: GenerativeModel[]
@@ -12,16 +16,20 @@ type InferenceRunnerConfig = {
 
 type AgentModuleConfig = {
 	agentRepository?: AgentRepository
-	agentLoopRepository?: LoopRepository
+	loopRepository?: LoopRepository
 	inferenceRunnerConfig?: InferenceRunnerConfig
 	memoryFactory?: MemoryFactory
 }
 
 type AgentModule = {
 	agentRepository: AgentRepository
-	agentLoopRepository: LoopRepository
+	loopRepository: LoopRepository
 	instructionRegistry: InstructionRegistry
 	memoryFactory: MemoryFactory
+	advanceLoop: AdvanceLoopUseCase
+	setBreakpoint: SetBreakpointUseCase
+	startLoop: StartLoopUseCase
+	endLoop: EndLoopUseCase
 }
 
 type CreateAgentParams = {

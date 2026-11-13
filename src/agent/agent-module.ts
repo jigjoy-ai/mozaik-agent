@@ -8,6 +8,10 @@ import { Inference } from "@agent/application/instructions/inference"
 import { ToolCall } from "@agent/application/instructions/tool-call"
 import { ToolRegistry } from "@agent/domain/tool-registry"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
+import { AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
+import { SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
+import { StartLoopUseCase } from "@agent/application/use-cases/start-loop"
+import { EndLoopUseCase } from "@agent/application/use-cases/end-loop"
 
 let module: AgentModule | undefined
 
@@ -17,7 +21,7 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	}
 
 	const agentRepository = config.agentRepository ?? new InMemoryAgentRepository()
-	const agentLoopRepository = config.agentLoopRepository ?? new InMemoryLoopRepository()
+	const loopRepository = config.loopRepository ?? new InMemoryLoopRepository()
 
 	const models = config.inferenceRunnerConfig?.supportedModels ?? supportedModels
 
@@ -28,15 +32,22 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	instructionRegistry.register("inference", inferenceInstruction)
 	instructionRegistry.register("tool_call", toolCallInstruction)
 
-	const loopRepository = new InMemoryLoopRepository()
-
 	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
+
+	const advanceLoop = new AdvanceLoopUseCase(loopRepository, instructionRegistry)
+	const setBreakpoint = new SetBreakpointUseCase(loopRepository)
+	const startLoop = new StartLoopUseCase(loopRepository)
+	const endLoop = new EndLoopUseCase(loopRepository)
 
 	module = {
 		agentRepository,
-		agentLoopRepository,
+		loopRepository,
 		instructionRegistry,
 		memoryFactory,
+		advanceLoop,
+		setBreakpoint,
+		startLoop,
+		endLoop,
 	}
 }
 
@@ -48,4 +59,4 @@ function resolveAgentModule(): AgentModule {
 	return module
 }
 
-export { initAgentModule }
+export { initAgentModule, resolveAgentModule }
