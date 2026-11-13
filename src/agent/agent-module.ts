@@ -10,7 +10,7 @@ import { ToolRegistry } from "@agent/domain/tool-registry"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
 import { AdvanceLoopInput, AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
 import { SetBreakpointInput, SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
-import { StartLoopInput, StartLoopUseCase } from "@agent/application/use-cases/start-loop"
+import { CreateLoopInput, CreateLoopUseCase } from "@agent/application/use-cases/create-loop"
 import { EndLoopInput, EndLoopUseCase } from "@agent/application/use-cases/end-loop"
 
 let module: AgentModule | undefined
@@ -42,9 +42,9 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 		const setBreakpointUseCase = new SetBreakpointUseCase(loopRepository)
 		return setBreakpointUseCase.execute(input)
 	}
-	const startLoop = async (input: StartLoopInput) => {
-		const startLoopUseCase = new StartLoopUseCase(agentRepository, loopRepository)
-		return startLoopUseCase.execute(input)
+	const createLoop = async (input: CreateLoopInput) => {
+		const createLoopUseCase = new CreateLoopUseCase(agentRepository, loopRepository)
+		return createLoopUseCase.execute(input)
 	}
 	const endLoop = async (input: EndLoopInput) => {
 		const endLoopUseCase = new EndLoopUseCase(loopRepository)
@@ -54,7 +54,7 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	module = {
 		advanceLoop,
 		setBreakpoint,
-		startLoop,
+		createLoop,
 		endLoop,
 	}
 }

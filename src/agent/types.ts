@@ -6,7 +6,7 @@ import { ToolDefinition } from "@agent/domain/inference/tool"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
 import { AdvanceLoopInput } from "@agent/application/use-cases/advance-loop"
 import { SetBreakpointInput } from "@agent/application/use-cases/set-breakpoint"
-import { StartLoopInput } from "@agent/application/use-cases/start-loop"
+import { CreateLoopInput } from "@agent/application/use-cases/create-loop"
 import { EndLoopInput } from "@agent/application/use-cases/end-loop"
 import { LoopRecord } from "@agent/domain/loop/loop-record"
 
@@ -25,7 +25,7 @@ type AgentModuleConfig = {
 type AgentModule = {
 	advanceLoop: (input: AdvanceLoopInput) => Promise<void>
 	setBreakpoint: (input: SetBreakpointInput) => Promise<void>
-	startLoop: (input: StartLoopInput) => Promise<LoopRecord>
+	createLoop: (input: CreateLoopInput) => Promise<LoopRecord>
 	endLoop: (input: EndLoopInput) => Promise<void>
 }
 
