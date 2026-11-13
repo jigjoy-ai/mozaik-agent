@@ -6,6 +6,7 @@ export type LoopRecord = {
 	assignee: string
 	goal: string
 	state: LoopStateId
+	message?: string
 	pendingInstruction?: InstructionRecord
 	completedInstructions: InstructionRecord[]
 }

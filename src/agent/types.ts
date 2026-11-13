@@ -26,6 +26,7 @@ type AgentModule = {
 	advanceLoop: (input: AdvanceLoopInput) => Promise<void>
 	setBreakpoint: (input: SetBreakpointInput) => Promise<void>
 	createLoop: (input: CreateLoopInput) => Promise<LoopRecord>
+	getLoop: (id: string) => Promise<LoopRecord>
 	endLoop: (input: EndLoopInput) => Promise<void>
 }
 

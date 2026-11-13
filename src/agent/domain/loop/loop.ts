@@ -9,6 +9,7 @@ export class Loop {
 	goal: string
 	assignee: string
 	state: LoopStateId
+	message: string | undefined
 	pendingInstruction: InstructionRecord | undefined
 	completedInstructions: InstructionRecord[]
 
@@ -17,6 +18,7 @@ export class Loop {
 		goal: string,
 		assignee: string,
 		state: LoopStateId,
+		message: string | undefined,
 		pendingInstruction: InstructionRecord | undefined,
 		completedInstructions: InstructionRecord[],
 	) {
@@ -24,6 +26,7 @@ export class Loop {
 		this.goal = goal
 		this.assignee = assignee
 		this.state = state
+		this.message = message
 		this.pendingInstruction = pendingInstruction
 		this.completedInstructions = completedInstructions
 	}
@@ -57,6 +60,10 @@ export class Loop {
 		this.pendingInstruction = undefined
 	}
 
+	getLatestInstruction(): InstructionRecord | undefined {
+		return this.pendingInstruction || this.completedInstructions[this.completedInstructions.length - 1]
+	}
+
 	handoff(recipientId: string): void {
 		this.assignee = recipientId
 	}
@@ -69,13 +76,14 @@ export class Loop {
 		this.state = "stopped"
 	}
 
-	end(): void {
+	end(message: string): void {
+		this.message = message
 		this.state = "completed"
 	}
 
 	static create(goal: string, assignee: string): Loop {
 		const id = UuidGenerator.generate()
-		return new Loop(id, goal, assignee, "idle", undefined, [])
+		return new Loop(id, goal, assignee, "idle", undefined, undefined, [])
 	}
 
 	static rehydrate(record: LoopRecord): Loop {
@@ -84,6 +92,7 @@ export class Loop {
 			record.goal,
 			record.assignee,
 			record.state,
+			record.message,
 			record.pendingInstruction,
 			record.completedInstructions,
 		)

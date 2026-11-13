@@ -2,7 +2,7 @@ import { LoopRepository } from "@agent/domain/loop/loop-repository"
 
 export type EndLoopInput = {
 	loopId: string
-	modelMessage: string
+	message: string
 }
 
 export class EndLoopUseCase {
@@ -13,7 +13,7 @@ export class EndLoopUseCase {
 		if (!loop) {
 			throw new Error("Loop not found")
 		}
-		loop.end()
+		loop.end(input.message)
 		await this.loopRepository.save(loop)
 	}
 }
