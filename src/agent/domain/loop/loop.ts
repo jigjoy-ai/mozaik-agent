@@ -1,6 +1,5 @@
 import type { Context } from "@agent/domain/inference/context"
-import { Instruction, InstructionResult } from "@agent/domain/instruction/instruction"
-import { LoopBreakpoint } from "@agent/domain/loop/loop-breakpoint"
+import { InstructionRecord } from "@agent/domain/loop/loop-breakpoint"
 
 export type LoopStateId = "idle" | "awaiting_result" | "completed" | "stopped" | "paused"
 
@@ -10,8 +9,8 @@ export class Loop {
 	assignee: string
 	state: LoopStateId
 	context: Context
-	breakpoint: LoopBreakpoint | undefined
-	completedInstructions: Instruction[]
+	pendingInstruction: InstructionRecord | undefined
+	completedInstructions: InstructionRecord[]
 
 	constructor(
 		id: string,
@@ -19,43 +18,45 @@ export class Loop {
 		assignee: string,
 		context: Context,
 		state: LoopStateId,
-		breakpoint: LoopBreakpoint | undefined,
-		completedInstructions: Instruction[],
+		pendingInstruction: InstructionRecord | undefined,
+		completedInstructions: InstructionRecord[],
 	) {
 		this.id = id
 		this.goal = goal
 		this.assignee = assignee
 		this.context = context
 		this.state = state
-		this.breakpoint = breakpoint
+		this.pendingInstruction = pendingInstruction
 		this.completedInstructions = completedInstructions
 	}
 
-	setBreakpoint(breakpoint: LoopBreakpoint): void {
-		if (this.breakpoint) {
-			throw new Error("An breakpoint is already set")
+	setBreakpoint(instruction: InstructionRecord): void {
+		if (this.pendingInstruction) {
+			throw new Error("An instruction is already pending")
 		}
 
-		this.breakpoint = breakpoint
+		this.pendingInstruction = instruction
 	}
 
-	getBreakpoint(): LoopBreakpoint | undefined {
-		return this.breakpoint
+	getBreakpoint(): InstructionRecord | undefined {
+		return this.pendingInstruction
 	}
 
-	resolveBreakpoint(result: InstructionResult): void {
-		if (!this.breakpoint) {
-			throw new Error("No pending instruction to resolve")
+	resolveBreakpoint(instruction: InstructionRecord): void {
+		if (!this.pendingInstruction) {
+			throw new Error("No instruction to resolve")
 		}
 
-		if (this.breakpoint.type === "inference" && !(result.type === "inference_output")) {
-			throw new Error("Inference output required")
-		} else if (this.breakpoint.type === "tool_call" && !(result.type === "tool_call_output")) {
-			throw new Error("Tool call output required")
+		if (this.pendingInstruction.instructionType !== instruction.instructionType) {
+			throw new Error("Instruction type mismatch")
 		}
 
-		//this.completedInstructions.push(this.instructionPointer)
-		this.breakpoint = undefined
+		if (!instruction.result) {
+			throw new Error("Instruction result is required")
+		}
+
+		this.completedInstructions.push(this.pendingInstruction)
+		this.pendingInstruction = undefined
 	}
 
 	handoff(recipientId: string): void {

@@ -18,18 +18,21 @@ export class AdvanceLoopUseCase {
 			throw new Error("Loop not found")
 		}
 
-		const breakpoint = loop.getBreakpoint()
-		if (!breakpoint) {
-			throw new Error("No breakpoint found")
+		const pendingInstruction = loop.getBreakpoint()
+		if (!pendingInstruction) {
+			throw new Error("No pending instruction found")
 		}
 
-		const instruction = this.instructionRegistry.getInstruction(breakpoint.type)
+		const instruction = this.instructionRegistry.getInstruction(pendingInstruction.instructionType)
 		if (!instruction) {
 			throw new Error("Instruction not found")
 		}
 
-		const result = await instruction.run(breakpoint.parameters)
-		loop.resolveBreakpoint(result)
+		const result = await instruction.run(pendingInstruction.parameters)
+
+		pendingInstruction.result = result
+
+		loop.resolveBreakpoint(pendingInstruction)
 
 		await this.loopRepository.save(loop)
 	}
