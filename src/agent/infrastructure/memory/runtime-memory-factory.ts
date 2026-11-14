@@ -1,4 +1,4 @@
-import { Memory, MemoryFactory } from "@agent/domain/memory"
+import { Memory, MemoryFactory } from "@agent/domain/agent/memory"
 import { RuntimeMemory } from "@agent/infrastructure/memory/runtime-memory"
 import { Context } from "@agent/domain/inference/context"
 

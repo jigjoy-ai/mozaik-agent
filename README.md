@@ -153,6 +153,45 @@ A developer reviews the operation and approves it. The application executes the 
 
 The breakpoint is not just a debugging feature. It is a **programmable decision point** in the agent's execution.
 
+## Using it
+
+```bash
+npm install @mozaik-ai/core
+```
+
+The application creates an agent and a Loop, puts an instruction at the breakpoint, and decides when it runs:
+
+```ts
+import { initAgentModule, resolveAgentModule } from "@mozaik-ai/core"
+
+initAgentModule()
+const { createAgent, createLoop, setBreakpoint, advanceLoop, getLoop, endLoop } = resolveAgentModule()
+
+const agent = await createAgent({ name: "assistant", instruction: "You are a helpful assistant.", tools: [] })
+const loop = await createLoop({ agentId: agent.id, goal: "Explain breakpoints in one sentence." })
+
+await setBreakpoint({
+	loopId: loop.id,
+	instruction: {
+		type: "inference",
+		parameters: {
+			model: "claude-sonnet-5-5",
+			context: { items: [{ type: "user_message", text: loop.goal }] },
+		},
+	},
+})
+
+// The inference is pending here: inspect it, change it, or don't run it at all.
+await advanceLoop({ loopId: loop.id })
+
+const { completedInstructions } = await getLoop(loop.id)
+console.log(completedInstructions[0].result)
+
+await endLoop({ loopId: loop.id, message: "Explained." })
+```
+
+Tools are registered with `registerTool(name, tool)` and run at a `tool_call` breakpoint the same way. Each provider reads its key from the environment (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`); pass `inferenceRunnerConfig.supportedModels` to `initAgentModule` to bring your own models.
+
 ## Use cases
 
 **Approval workflows.** Require confirmation before running sensitive tools or making consequential changes.

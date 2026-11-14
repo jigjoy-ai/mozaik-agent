@@ -1,6 +1,6 @@
 {
-	"name": "@jigjoy/mozaik-agent",
-	"version": "0.0.1",
+	"name": "@mozaik-ai/core",
+	"version": "5.0.0",
 	"description": "An agent harness that brings debugger-like execution control to AI agents.",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
@@ -39,6 +39,7 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"typecheck": "tsc --noEmit",
+		"test": "rstest run",
 		"prepare": "husky"
 	},
 	"keywords": [

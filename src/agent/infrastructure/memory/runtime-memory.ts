@@ -1,4 +1,4 @@
-import type { Memory } from "@agent/domain/memory"
+import type { Memory } from "@agent/domain/agent/memory"
 import type { Context, ContextItem } from "@agent/domain/inference/context"
 
 export class RuntimeMemory implements Memory {

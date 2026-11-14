@@ -1,5 +1,5 @@
-import { Memory } from "@agent/domain/memory"
-import { AgentRecord } from "@jigjoy/mozaik-agent/src/agent/domain/agent/record"
+import { Memory } from "@agent/domain/agent/memory"
+import { AgentRecord } from "@agent/domain/agent/record"
 import type { ToolDefinition } from "@agent/domain/inference/tool"
 import { UuidGenerator } from "@util/uuid-generator"
 
@@ -49,7 +49,7 @@ export class Agent {
 		tools: ToolDefinition[]
 		memory: Memory
 	}): Agent {
-		const id = UuidGenerator.create()
+		const id = UuidGenerator.generate()
 		return new Agent(id, name, instruction, tools, memory)
 	}
 

@@ -103,7 +103,7 @@ export class AnthropicMessagesMapper {
 					input = toolCallRequest.toolArguments
 				}
 				this.addContentBlock(messages, "assistant", {
-					type: "tool_call_request",
+					type: "tool_use",
 					id: toolCallRequest.requestId,
 					name: toolCallRequest.toolName,
 					input: input,
@@ -115,7 +115,7 @@ export class AnthropicMessagesMapper {
 				const toolCallResult = item as ToolCallResultItem
 				this.addContentBlock(messages, "user", {
 					type: "tool_result",
-					tool_call_id: toolCallResult.requestId,
+					tool_use_id: toolCallResult.requestId,
 					content: toolCallResult.result.text,
 				})
 			}
@@ -153,7 +153,7 @@ export class AnthropicMessagesMapper {
 				})
 				continue
 			}
-			if (block.type === "tool_call") {
+			if (block.type === "tool_use") {
 				items.push({
 					type: "tool_call",
 					requestId: block.id,

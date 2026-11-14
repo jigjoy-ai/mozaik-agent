@@ -7,7 +7,7 @@ export default defineConfig({
 	include: ["tests/**/*.{test,spec}.ts"],
 	// Seed dummy provider credentials before any suite runs.
 	setupFiles: ["./tests/setup.ts"],
-	// Read the project's path aliases (@app, @domain, @infra) from tsconfig.
+	// Read the project's path aliases (@agent, @util) from tsconfig.
 	source: {
 		tsconfigPath: "./tsconfig.json",
 	},
@@ -16,9 +16,6 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@agent": "./src/agent",
-			"@environment": "./src/environment",
-			"@agent/domain/inference": "./src/inference",
-			"@providers": "./src/providers",
 			"@util": "./src/util",
 		},
 	},

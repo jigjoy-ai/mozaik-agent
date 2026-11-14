@@ -2,7 +2,8 @@ import { MemoryFactory } from "@agent/domain/agent/memory"
 import { GenerativeModel } from "@agent/domain/inference/generative-model"
 import { AgentRepository } from "@agent/domain/agent/agent-repository"
 import { LoopRepository } from "@agent/domain/loop/loop-repository"
-import { ToolDefinition } from "@agent/domain/inference/tool"
+import { Tool, ToolDefinition } from "@agent/domain/inference/tool"
+import { Agent } from "@agent/domain/agent/agent"
 import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
 import { AdvanceLoopInput } from "@agent/application/use-cases/advance-loop"
 import { SetBreakpointInput } from "@agent/application/use-cases/set-breakpoint"
@@ -23,6 +24,8 @@ type AgentModuleConfig = {
 }
 
 type AgentModule = {
+	createAgent: (input: CreateAgentParams) => Promise<Agent>
+	registerTool: (name: string, tool: Tool) => void
 	advanceLoop: (input: AdvanceLoopInput) => Promise<void>
 	setBreakpoint: (input: SetBreakpointInput) => Promise<void>
 	createLoop: (input: CreateLoopInput) => Promise<LoopRecord>

@@ -1,7 +1,7 @@
 import { InMemoryAgentRepository } from "@agent/infrastructure/repositories/in-memory-agent-repository"
 import { InMemoryLoopRepository } from "@agent/infrastructure/repositories/in-memory-loop-repository"
 import { RuntimeMemoryFactory } from "@agent/infrastructure/memory/runtime-memory-factory"
-import { AgentModule, AgentModuleConfig } from "@agent/types"
+import { AgentModule, AgentModuleConfig, CreateAgentParams } from "@agent/types"
 import { supportedModels } from "@agent/infrastructure/providers/supported-models"
 import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
 import { Inference } from "@agent/application/instructions/inference"
@@ -13,6 +13,8 @@ import { SetBreakpointInput, SetBreakpointUseCase } from "@agent/application/use
 import { CreateLoopInput, CreateLoopUseCase } from "@agent/application/use-cases/create-loop"
 import { EndLoopInput, EndLoopUseCase } from "@agent/application/use-cases/end-loop"
 import { GetLoopUseCase } from "@agent/application/use-cases/get-loop"
+import { CreateAgentUseCase } from "@agent/application/use-cases/create-agent"
+import type { Tool } from "@agent/domain/inference/tool"
 
 let module: AgentModule | undefined
 
@@ -27,13 +29,23 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	const models = config.inferenceRunnerConfig?.supportedModels ?? supportedModels
 
 	const inferenceInstruction = new Inference(models, new InferenceInstructionValidator())
-	const toolCallInstruction = new ToolCall(new ToolRegistry())
+	const toolRegistry = new ToolRegistry()
+	const toolCallInstruction = new ToolCall(toolRegistry)
 
 	const instructionRegistry = new InstructionRegistry()
 	instructionRegistry.register("inference", inferenceInstruction)
 	instructionRegistry.register("tool_call", toolCallInstruction)
 
 	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
+
+	const createAgent = async (input: CreateAgentParams) => {
+		const createAgentUseCase = new CreateAgentUseCase(agentRepository, memoryFactory)
+		return createAgentUseCase.invoke(input)
+	}
+
+	const registerTool = (name: string, tool: Tool) => {
+		toolRegistry.registerTool(name, tool)
+	}
 
 	const advanceLoop = async (input: AdvanceLoopInput) => {
 		const advanceLoopUseCase = new AdvanceLoopUseCase(loopRepository, instructionRegistry)
@@ -61,6 +73,8 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 	}
 
 	module = {
+		createAgent,
+		registerTool,
 		advanceLoop,
 		setBreakpoint,
 		createLoop,
