@@ -1,6 +1,6 @@
 {
 	"name": "@mozaik-ai/core",
-	"version": "5.0.0",
+	"version": "5.0.1",
 	"description": "An agent harness that brings debugger-like execution control to AI agents.",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",

@@ -1,10 +1,11 @@
 import { AgentRepository } from "@agent/domain/agent/agent-repository"
 import { Agent } from "@agent/domain/agent/agent"
 import { Memory, MemoryFactory } from "@agent/domain/agent/memory"
+import { Loop } from "@agent/domain/loop/loop"
 
 export * from "@agent/types"
 export * from "@agent/agent-module"
-export { AgentRepository, Agent, MemoryFactory, Memory }
+export { AgentRepository, Agent, MemoryFactory, Memory, Loop }
 
 export type * from "@agent/domain/inference/context"
 export type { Tool, ToolDefinition } from "@agent/domain/inference/tool"

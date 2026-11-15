@@ -192,6 +192,8 @@ await endLoop({ loopId: loop.id, message: "Explained." })
 
 Tools are registered with `registerTool(name, tool)` and run at a `tool_call` breakpoint the same way. Each provider reads its key from the environment (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`); pass `inferenceRunnerConfig.supportedModels` to `initAgentModule` to bring your own models.
 
+Loops are kept in memory unless you say where else: pass a `loopRepository` to `initAgentModule` and every step is saved through it. A repository returns a loop from its saved record with `Loop.rehydrate(record)`, so a loop can be picked up after a restart with `getLoop(id)`.
+
 ## Use cases
 
 **Approval workflows.** Require confirmation before running sensitive tools or making consequential changes.
