@@ -10,6 +10,7 @@ import { SetBreakpointInput } from "@agent/application/use-cases/set-breakpoint"
 import { CreateLoopInput } from "@agent/application/use-cases/create-loop"
 import { EndLoopInput } from "@agent/application/use-cases/end-loop"
 import { LoopRecord } from "@agent/domain/loop/loop-record"
+import { PauseLoopInput } from "./application/use-cases/pause-loop"
 
 type InferenceRunnerConfig = {
 	supportedModels?: GenerativeModel[]
@@ -31,6 +32,7 @@ type AgentModule = {
 	createLoop: (input: CreateLoopInput) => Promise<LoopRecord>
 	getLoop: (id: string) => Promise<LoopRecord>
 	endLoop: (input: EndLoopInput) => Promise<void>
+	pauseLoop: (input: PauseLoopInput) => Promise<void>
 }
 
 type CreateAgentParams = {

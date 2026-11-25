@@ -1,20 +1,7 @@
-import { InMemoryAgentRepository } from "@agent/infrastructure/repositories/in-memory-agent-repository"
-import { InMemoryLoopRepository } from "@agent/infrastructure/repositories/in-memory-loop-repository"
-import { RuntimeMemoryFactory } from "@agent/infrastructure/memory/runtime-memory-factory"
-import { AgentModule, AgentModuleConfig, CreateAgentParams } from "@agent/types"
-import { supportedModels } from "@agent/infrastructure/providers/supported-models"
-import { InferenceInstructionValidator } from "@agent/domain/inference/request-validation/inference-request-validator"
-import { Inference } from "@agent/application/instructions/inference"
-import { ToolCall } from "@agent/application/instructions/tool-call"
-import { ToolRegistry } from "@agent/domain/tool-registry"
-import { InstructionRegistry } from "@agent/domain/instruction/instruction-registry"
-import { AdvanceLoopInput, AdvanceLoopUseCase } from "@agent/application/use-cases/advance-loop"
-import { SetBreakpointInput, SetBreakpointUseCase } from "@agent/application/use-cases/set-breakpoint"
-import { CreateLoopInput, CreateLoopUseCase } from "@agent/application/use-cases/create-loop"
-import { EndLoopInput, EndLoopUseCase } from "@agent/application/use-cases/end-loop"
-import { GetLoopUseCase } from "@agent/application/use-cases/get-loop"
-import { CreateAgentUseCase } from "@agent/application/use-cases/create-agent"
-import type { Tool } from "@agent/domain/inference/tool"
+import { AgentModule, AgentModuleConfig } from "@agent/types"
+import { createAgentDependencies } from "./agent-dependencies"
+import { createAgentUseCases } from "./agent-use-cases"
+import { registerAgentCommands } from "./agent-commands"
 
 let module: AgentModule | undefined
 
@@ -23,63 +10,21 @@ function initAgentModule(config: AgentModuleConfig = {}) {
 		throw new Error("Agent module already initialized")
 	}
 
-	const agentRepository = config.agentRepository ?? new InMemoryAgentRepository()
-	const loopRepository = config.loopRepository ?? new InMemoryLoopRepository()
-
-	const models = config.inferenceRunnerConfig?.supportedModels ?? supportedModels
-
-	const inferenceInstruction = new Inference(models, new InferenceInstructionValidator())
-	const toolRegistry = new ToolRegistry()
-	const toolCallInstruction = new ToolCall(toolRegistry)
-
-	const instructionRegistry = new InstructionRegistry()
-	instructionRegistry.register("inference", inferenceInstruction)
-	instructionRegistry.register("tool_call", toolCallInstruction)
-
-	const memoryFactory = config.memoryFactory ?? new RuntimeMemoryFactory()
-
-	const createAgent = async (input: CreateAgentParams) => {
-		const createAgentUseCase = new CreateAgentUseCase(agentRepository, memoryFactory)
-		return createAgentUseCase.invoke(input)
-	}
-
-	const registerTool = (name: string, tool: Tool) => {
-		toolRegistry.registerTool(name, tool)
-	}
-
-	const advanceLoop = async (input: AdvanceLoopInput) => {
-		const advanceLoopUseCase = new AdvanceLoopUseCase(loopRepository, instructionRegistry)
-		return advanceLoopUseCase.execute(input)
-	}
-
-	const setBreakpoint = async (input: SetBreakpointInput) => {
-		const setBreakpointUseCase = new SetBreakpointUseCase(loopRepository)
-		return setBreakpointUseCase.execute(input)
-	}
-
-	const createLoop = async (input: CreateLoopInput) => {
-		const createLoopUseCase = new CreateLoopUseCase(agentRepository, loopRepository)
-		return createLoopUseCase.execute(input)
-	}
-
-	const getLoop = async (id: string) => {
-		const getLoopUseCase = new GetLoopUseCase(loopRepository)
-		return getLoopUseCase.execute(id)
-	}
-
-	const endLoop = async (input: EndLoopInput) => {
-		const endLoopUseCase = new EndLoopUseCase(loopRepository)
-		return endLoopUseCase.execute(input)
-	}
+	const dependencies = createAgentDependencies(config)
+	const useCases = createAgentUseCases(dependencies)
+	registerAgentCommands(useCases)
 
 	module = {
-		createAgent,
-		registerTool,
-		advanceLoop,
-		setBreakpoint,
-		createLoop,
-		getLoop,
-		endLoop,
+		createAgent: (input) => useCases.createAgent.execute(input),
+		registerTool: (name, tool) => {
+			dependencies.toolRegistry.registerTool(name, tool)
+		},
+		advanceLoop: (input) => useCases.advanceLoop.execute(input),
+		setBreakpoint: (input) => useCases.setBreakpoint.execute(input),
+		createLoop: (input) => useCases.createLoop.execute(input),
+		getLoop: (id) => useCases.getLoop.execute(id),
+		pauseLoop: (input) => useCases.pauseLoop.execute(input),
+		endLoop: (input) => useCases.endLoop.execute(input),
 	}
 }
 

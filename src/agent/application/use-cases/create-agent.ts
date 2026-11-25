@@ -12,7 +12,7 @@ export class CreateAgentUseCase {
 		this.memoryFactory = memoryFactory
 	}
 
-	async invoke(input: CreateAgentParams): Promise<Agent> {
+	async execute(input: CreateAgentParams): Promise<Agent> {
 		const memory = this.memoryFactory.create()
 
 		const agent = Agent.create({ name: input.name, instruction: input.instruction, tools: input.tools, memory })
