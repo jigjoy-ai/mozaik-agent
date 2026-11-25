@@ -3,6 +3,9 @@ import type { ModelOutputItem, ReasoningItem, ToolCallItem, ToolCallResultItem }
 import { InputTokenDetails, OutputTokenDetails, TokenUsage } from "@agent/domain/inference/token-usage"
 import type Anthropic from "@anthropic-ai/sdk"
 
+// Anthropic rejects a request without max_tokens, so a request that sets no limit gets this one.
+export const DEFAULT_MAX_OUTPUT_TOKENS = 4096
+
 export class AnthropicMessagesMapper {
 	toRequest(params: InferenceParams) {
 		const { messages, system } = this.mapContextItems(params)
@@ -13,7 +16,7 @@ export class AnthropicMessagesMapper {
 			messages,
 		}
 
-		request.max_tokens = params.maxOutputTokens!
+		request.max_tokens = params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS
 
 		if (system) {
 			request.system = system
